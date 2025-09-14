@@ -1,0 +1,10 @@
+* COMPRESSOR STATION
+Station name: BIG ONE STATION
+number of workshops: 511
+Number of currently involved workshops: 503 
+station class: 2
+* PIPELINE
+Kilometer mark: AHAHAHHAHAHA AHAHHAHAHAAHHA
+length: 900.0
+diameter: 1500
+repairment status: 0

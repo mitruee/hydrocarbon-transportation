@@ -34,7 +34,7 @@ public:
 		std::cout << "=== PIPELINE CREATION MODE ===" << std::endl;
 
 		std::cout << "Enter a kilometer mark: ";
-		std::cin >> pipeline.kilometer_mark;
+		std::getline(std::cin, pipeline.kilometer_mark);
 
 		pipeline.repairment_status = false;
 		
@@ -167,6 +167,11 @@ public:
 
 		std::string input;
 
+		if (pipeline.length == 0.0 && pipeline.diameter == 0) {
+			std::cout << "There is no created pipeline! Try again later..." << std::endl;
+			return pipeline;
+		}
+
 		std::cout << "=============================" << std::endl;
 		std::cout << "=== PIPELINE EDITING MODE ===" << std::endl;
 
@@ -221,7 +226,7 @@ public:
 		std::cout << "=== COMPRESSOR STATION CREATION MODE ===" << std::endl;
 
 		std::cout << "Enter station name: ";
-		std::cin >> compressor_station.name;
+		std::getline(std::cin, compressor_station.name);
 
 		for (int i{ 0 }; i < 3; i++) {
 
@@ -303,17 +308,27 @@ public:
 		}
 
 		for (std::string element : inputs) {
-			if (element == "" || inputs[2] > inputs[1]) {
+
+			std::cout << element << std::endl;
+
+			if (element == "") {
 
 				std::cout << "Invalid file format for creating a new compressor station! Check file. It must have the following lines:" << std::endl;
 				std::cout << "Station name: xxx" << std::endl;
 				std::cout << "Number of workshops: (integer)" << std::endl;
-				std::cout << "Number of involved workshops: (integer, less than number of workshops)" << std::endl;
+				std::cout << "Number of currently involved workshops: (integer, less than number of workshops)" << std::endl;
 				std::cout << "Station class: (1-3)" << std::endl << std::endl;
 
 				return compressor_station;
 			}
 		}
+
+		if (std::stoi(inputs[2]) > std::stoi(inputs[1])){
+			std::cout << "Number of involved workshops can not be more than number of workshops" << std::endl;
+
+			return compressor_station;
+		}
+		
 
 		in.close();
 
@@ -353,6 +368,11 @@ public:
 
 		std::string input;
 
+		if (compressor_station.num_of_involved_workshops == 0 && compressor_station.num_of_workshops == 0) {
+			std::cout << "There is no created compressor stations! Try again later..." << std::endl;
+			return compressor_station;
+		}
+
 		std::cout << "=======================================" << std::endl;
 		std::cout << "=== COMPRESSOR STATION EDITING MODE ===" << std::endl;
 
@@ -365,20 +385,22 @@ public:
 				if (input == "0") {
 					if (compressor_station.num_of_involved_workshops > 0) {
 						compressor_station.num_of_involved_workshops -= 1;
-						std::cout << "Workshop had been stopped successfully!";
+						std::cout << "Workshop had been stopped successfully! Total involved workshops: " << compressor_station.num_of_involved_workshops << std::endl;
+						break;
 					}
 					else {
-						std::cout << "All workshops are stopped now";
+						std::cout << "All workshops are stopped now!";
 						return compressor_station;
 					}
 				}
 				else {
 					if (compressor_station.num_of_involved_workshops < compressor_station.num_of_workshops) {
 						compressor_station.num_of_involved_workshops += 1;
-						std::cout << "Workshop had been started successfully!";
+						std::cout << "Workshop had been started successfully! Total involved workshops: " << compressor_station.num_of_involved_workshops << std::endl;
+						break;
 					}
 					else {
-						std::cout << "All workshops are involved now";
+						std::cout << "All workshops are involved now!" << std::endl;
 						return compressor_station;
 					}
 				}
@@ -409,6 +431,7 @@ void continuing() {
 	std::cout << "Enter any key to continue..." << std::endl;
 	std::cin >> smthng;
 
+	std::cout << "=================================" << std::endl;
 }
 
 int main() {
@@ -454,6 +477,8 @@ int main() {
 			continuing();
 			continue;
 		}
+		
+		std::cout << "=================================" << std::endl << std::endl;
 
 		clear();
 
