@@ -34,7 +34,7 @@ public:
 		std::cout << "=== PIPELINE CREATION MODE ===" << std::endl;
 
 		std::cout << "Enter a kilometer mark: ";
-		std::getline(std::cin, pipeline.kilometer_mark);
+		std::cin >> pipeline.kilometer_mark;
 
 		pipeline.repairment_status = false;
 		
@@ -226,7 +226,7 @@ public:
 		std::cout << "=== COMPRESSOR STATION CREATION MODE ===" << std::endl;
 
 		std::cout << "Enter station name: ";
-		std::getline(std::cin, compressor_station.name);
+		std::cin >> compressor_station.name;
 
 		for (int i{ 0 }; i < 3; i++) {
 
