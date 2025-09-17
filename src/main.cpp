@@ -1,423 +1,249 @@
 #include <iostream>
 #include <fstream>
-#include <regex>
 #include <vector>
-#include <string>
-#include <chrono>
+#include <regex>
 
-class Pipeline {
-public:
+struct Pipeline {
+	
+	std::string name; // kilometer mark
+	float length;
+	int diameter;
+	bool status; // repairment status
 
-	std::string kilometer_mark = "empty";
-	float length = 0.0;
-	int diameter = 0;
-	bool repairment_status = 0;
+};
 
-	static Pipeline consoleInput() {
-		
-		Pipeline pipeline;
-		std::string input;
+struct CompressorStation {
 
-		std::vector<std::string> patterns = {
-			"\\d+\\.\\d+", 
-			"\\d+"
-		};
+	std::string name;
+	int workshops;
+	int involved_workshops;
+	char rang; // station class
 
-		std::vector<std::string> outputs = {
-			"Enter a length [real number]: ",
-			"Enter a diameter [integer]: "
-		};
+};
 
-		std::vector<std::string> inputs(2);
+Pipeline pipelineConsoleInput() {
 
-		std::cout << "==============================" << std::endl;
-		std::cout << "=== PIPELINE CREATION MODE ===" << std::endl;
+	Pipeline pipeline;
 
-		std::cout << "Enter a kilometer mark: ";
-		std::cin >> pipeline.kilometer_mark;
+	std::cout << "Enter a kilometer mark: " << std::endl;
+	std::cin >> pipeline.name;
+	pipeline.status = 0;
 
-		pipeline.repairment_status = false;
-		
-		for (int i{ 0 }; i < 2; i++) {
-			
-			while (true) {
-				
-				std::cout << outputs[i];
-				std::cin >> input;
+	std::vector<std::string> outputs = {"Enter a length [real number]: ", "Enter a diameter [integer]: "};
+	std::vector<std::string> patterns = {"\\d+\\.\\d+", "\\d+"};
+	std::vector<std::string> inputs(2);
+	std::string input;
 
-				std::regex pattern(patterns[i]);
-
-				if (std::regex_match(input, pattern)) {
-					inputs[i] = input;
-					break;
-				}
-				else {
-					std::cout << "Incorrect input! Try again!" << std::endl;
-					std::cin.clear();
-				}
-			}
-		}
-
-		std::cout << "==============================" << std::endl;
-
-		pipeline.length = std::stof(inputs[0]);
-		pipeline.diameter = std::stoi(inputs[1]);
-
-		std::cout.clear();
-
-		return pipeline;
-	}
-
-	 void consoleOutput(Pipeline pipeline) {
-
-		std::cout << "=== PIPELINE ===" << std::endl;
-		std::cout << "Kilometer mark: " << pipeline.kilometer_mark << std::endl;
-		std::cout << "Length: " << pipeline.length << " km" << std::endl;
-		std::cout << "Diameter: " << pipeline.diameter << " mm" << std::endl;
-		std::cout << "Repairment status: " << pipeline.repairment_status << std::endl;
-		std::cout << "================" << std::endl << std::endl;
-
-	}
-
-	static Pipeline fileInput(std::string filepath) {
-		
-		Pipeline pipeline;
-
-		std::string line;
-		std::ifstream in(filepath);
-
-		std::vector<std::string> patterns = {
-			"([Kk]ilometer mark:)\\s*(.+)",
-			"([Ll]ength:)\\s*(\\d+\\.\\d+)",
-			"([Dd]iameter:)\\s*(\\d+)",
-			"([Rr]epairment status:)\\s*(0|1)"
-		};
-
-		std::vector<std::string> inputs(4);
-
-		if (in.is_open()) {
-			
-			while (std::getline(in, line)) {
-			
-				for (int i{ 0 }; i < 4; i++) {
-
-					std::regex pattern(patterns[i]);
-					std::smatch m;
-
-					if (std::regex_match(line, m, pattern)) {
-						inputs[i] = m[2];
-					}
-				}
-			}
-		}
-		
-		for (std::string element : inputs) {
-			if (element == "") {
-
-				std::cout << "Invalid file format for creating a new pipeline! Check file. It must have the following lines:" << std::endl;
-				std::cout << "Kilometer mark: xxx" << std::endl;
-				std::cout << "Length: (real number written with a dot!)" << std::endl;
-				std::cout << "Diameter: (integer)" << std::endl;
-				std::cout << "Repairment status: (0 if in work else 1)" << std::endl << std::endl;
-
-				return pipeline;
-			}
-		}
-
-		pipeline.kilometer_mark = inputs[0];
-		pipeline.length = std::stof(inputs[1]);
-		pipeline.diameter = std::stoi(inputs[2]);
-		pipeline.repairment_status = std::stoi(inputs[3]);
-
-		in.close();
-
-		return pipeline;
-	}
-
-	void fileOutput(Pipeline pipeline, std::string filepath) {
-		
-		std::ofstream out(filepath, std::ios::app);
-
-		std::vector<std::vector<std::string>> outputs = {
-			{"Kilometer mark: ", pipeline.kilometer_mark},
-			{"Length: ", std::to_string(pipeline.length), " km"},
-			{"Diameter: ", std::to_string(pipeline.diameter), " mm"},
-			{"Repairment status: ", std::to_string(pipeline.repairment_status)}
-		};
-		
-		out << "* PIPELINE" << std::endl;
-
-		if (out.is_open()) {
-			for (int i{ 0 }; i < 4; i++) {
-				
-				std::string line;
-
-				for (std::string element: outputs[i]) {
-					line += element;
-				}
-
-				out << line << std::endl;
-			}
-		}
-
-		out.close();
-	}
-
-	Pipeline repairmentStatusChanging(Pipeline pipeline) {
-
-		std::string input;
-
-		if (pipeline.length == 0.0 && pipeline.diameter == 0) {
-			std::cout << "There is no created pipeline! Try again later..." << std::endl;
-			return pipeline;
-		}
-
-		std::cout << "=============================" << std::endl;
-		std::cout << "=== PIPELINE EDITING MODE ===" << std::endl;
+	for (int i{ 0 }; i < 2; i++) {
 
 		while (true) {
-			std::cout << "Enter a new repairment status [0 - in work, 1 - in repair]: ";
+
+			std::cout << outputs[i];
 			std::cin >> input;
 
-			std::regex pattern("0|1");
+			std::regex pattern(patterns[i]);
+
 			if (std::regex_match(input, pattern)) {
-				pipeline.repairment_status = stoi(input);
+				inputs[i] = input;
 				break;
 			}
 			else {
-				std::cout << "Incorrect input! Try again!" << std::endl;
+				std::cout << "Invalid value! Try again!" << std::endl;
 			}
 		}
-
-		std::cout << "=============================" << std::endl;
-
-		return pipeline;
-	}
-};
-
-class CompressorStation {
-public:
-
-	std::string name = "empty";
-	int num_of_workshops = 0;
-	int num_of_involved_workshops = 0;
-	int station_class = 3;
-
-	static CompressorStation consoleInput() {
-
-		CompressorStation compressor_station;
-		std::string input;
-
-		std::vector<std::string> patterns = {
-			"\\d+",
-			"\\d+",
-			"[1-3]"
-		};
-
-		std::vector<std::string> outputs = {
-			"Enter a number of workshops: ",
-			"Enter a number of currently involved workshops: ",
-			"Enter a station class [1-3]: "
-		};
-
-		std::vector<std::string> inputs(3);
-
-		std::cout << "========================================" << std::endl;
-		std::cout << "=== COMPRESSOR STATION CREATION MODE ===" << std::endl;
-
-		std::cout << "Enter station name: ";
-		std::cin >> compressor_station.name;
-
-		for (int i{ 0 }; i < 3; i++) {
-
-			while (true) {
-
-				std::cout << outputs[i];
-				std::cin >> input;
-
-				std::regex pattern(patterns[i]);
-
-				if (std::regex_match(input, pattern)) {
-					inputs[i] = input;
-					break;
-				}
-				else {
-					std::cout << "Incorrect input! Try again!" << std::endl;
-					std::cin.clear();
-				}
-			}
-		}
-
-		std::cout << "========================================" << std::endl;
-
-		if (std::stoi(inputs[1]) > std::stoi(inputs[0])) {
-			std::cout << "Number of involved workshops can not be more than number of workshops!" << std::endl;
-			return compressor_station;
-		}
-
-		compressor_station.num_of_workshops = std::stoi(inputs[0]);
-		compressor_station.num_of_involved_workshops = std::stoi(inputs[1]);
-		compressor_station.station_class = std::stoi(inputs[2]);
-
-		std::cout.clear();
-
-		return compressor_station;
 	}
 
-	void consoleOutput(CompressorStation compressor_station) {
+	pipeline.length = std::stof(inputs[0]);
+	pipeline.diameter = std::stoi(inputs[1]);
 
-		std::cout << "=== COMPRESSOR STATION ===" << std::endl;
-		std::cout << "Station name: " << compressor_station.name << std::endl;
-		std::cout << "Number of workshops: " << compressor_station.num_of_workshops << std::endl;
-		std::cout << "Number of currently involved workshops: " << compressor_station.num_of_involved_workshops << std::endl;
-		std::cout << "Station class: " << compressor_station.station_class << std::endl;
-		std::cout << "==========================" << std::endl << std::endl;
+	return pipeline;
+}
 
+void pipelineConsoleOutput(Pipeline pipeline) {
+
+	std::cout << "Kilometer mark: " << pipeline.name << std::endl;
+	std::cout << "Length: " << pipeline.length << " km" << std::endl;
+	std::cout << "Diameter: " << pipeline.diameter << " mm" << std::endl;
+	std::cout << "Repairment status: " << pipeline.status << std::endl;
+
+}
+
+Pipeline pipelineFileInput(std::string filepath) {
+
+	Pipeline pipeline;
+
+	std::regex line_pattern("^\\s*p\\s*;\\s*(.+)\\s*;\\s*(\\d+\\.\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(0|1)\\s*$");
+	std::smatch match;
+	std::ifstream file(filepath);
+	std::string line;
+
+	if (file.is_open()) {
+
+		while (std::getline(file, line)) {
+
+			if (std::regex_match(line, match, line_pattern)) {
+
+				pipeline.name = match[1];
+				pipeline.length = std::stof(match[2]);
+				pipeline.diameter = std::stoi(match[3]);
+				pipeline.status = std::stoi(match[4]);
+
+				return pipeline;
+			};
+		}
 	}
 
-	static CompressorStation fileInput(std::string filepath) {
+	std::cout << "There is some troubles with specified file! Check it";
+	return;
+}
 
-		CompressorStation compressor_station;
+void pipelineFileOutput(std::string filepath, Pipeline pipeline) {
 
-		std::string line;
-		std::ifstream in(filepath);
+	std::ofstream file(filepath, std::ios::app);
 
-		std::vector<std::string> patterns = {
-			"([Ss]tation name:)\\s*(.+)",
-			"([Nn]umber of workshops:)\\s*(\\d+)",
-			"([Nn]umber of currently involved workshops:)\\s*(\\d+)",
-			"([Ss]tation class:)\\s*([1-3])"
-		};
+	if (file.is_open()) {
 
-		std::vector<std::string> inputs(4);
-
-		if (in.is_open()) {
-
-			while (std::getline(in, line)) {
-
-				for (int i{ 0 }; i < 4; i++) {
-
-					std::regex pattern(patterns[i]);
-					std::smatch m;
-
-					if (std::regex_match(line, m, pattern)) {
-						inputs[i] = m[2];
-					}
-				}
-			}
-		}
-
-		for (std::string element : inputs) {
-
-			std::cout << element << std::endl;
-
-			if (element == "") {
-
-				std::cout << "Invalid file format for creating a new compressor station! Check file. It must have the following lines:" << std::endl;
-				std::cout << "Station name: xxx" << std::endl;
-				std::cout << "Number of workshops: (integer)" << std::endl;
-				std::cout << "Number of currently involved workshops: (integer, less than number of workshops)" << std::endl;
-				std::cout << "Station class: (1-3)" << std::endl << std::endl;
-
-				return compressor_station;
-			}
-		}
-
-		if (std::stoi(inputs[2]) > std::stoi(inputs[1])){
-			std::cout << "Number of involved workshops can not be more than number of workshops" << std::endl;
-
-			return compressor_station;
-		}
-		
-
-		in.close();
-
-		return compressor_station;
+		file << "p;" << pipeline.name << ";" << pipeline.length << ";" << pipeline.diameter << ";" << pipeline.status << std::endl;
 	}
+}
 
-	void fileOutput(CompressorStation compressor_station, std::string filepath) {
+Pipeline pipelineStatusChanging(Pipeline pipeline) {
 
-		std::ofstream out(filepath, std::ios::app);
+	std::regex pattern("0|1");
+	std::string input;
 
-		out << "* COMPRESSOR STATION" << std::endl;
+	while (true) {
 
-		std::vector<std::vector<std::string>> outputs = {
-			{"Station name: ", compressor_station.name},
-			{"Number of workshops: ", std::to_string(compressor_station.num_of_workshops)},
-			{"Number of currently involved workshops: ", std::to_string(compressor_station.num_of_involved_workshops)},
-			{"Station class: ", std::to_string(compressor_station.station_class)}
-		};
+		std::cin >> input;
 
-		if (out.is_open()) {
-			for (int i{ 0 }; i < 4; i++) {
+		if (std::regex_match(input, pattern)) {
 
-				std::string line;
-
-				for (std::string element : outputs[i]) {
-					line += element;
-				}
-
-				out << line << std::endl;
-			}
+			pipeline.status = std::stoi(input);
+			break;
 		}
-
-		out.close();
 	}
+}
 
-	CompressorStation startStopWorkshop(CompressorStation compressor_station) {
+CompressorStation csConsoleInput() {
 
-		std::string input;
+	CompressorStation cs;
 
-		if (compressor_station.num_of_involved_workshops == 0 && compressor_station.num_of_workshops == 0) {
-			std::cout << "There is no created compressor stations! Try again later..." << std::endl;
-			return compressor_station;
-		}
+	std::cout << "Enter a station name: ";
+	std::cin >> cs.name;
 
-		std::cout << "=======================================" << std::endl;
-		std::cout << "=== COMPRESSOR STATION EDITING MODE ===" << std::endl;
+	std::vector<std::string> outputs = { "Enter a number of workshops: ", "Enter a number of involved workshops: " };
+	std::vector<std::string> patterns = { "\\d+", "\\d+", "A|B|C|D|E"};
+	std::vector<std::string> inputs(3);
+	std::string input;
+
+	for (int i{ 0 }; i < 2; i++) {
 
 		while (true) {
-			std::cout << "Enter a parameter [0 - stop workshop, 1 - start workshop]: ";
+
+			std::cout << outputs[i];
 			std::cin >> input;
 
-			std::regex pattern("0|1");
+			std::regex pattern(patterns[i]);
+
 			if (std::regex_match(input, pattern)) {
-				if (input == "0") {
-					if (compressor_station.num_of_involved_workshops > 0) {
-						compressor_station.num_of_involved_workshops -= 1;
-						std::cout << "Workshop had been stopped successfully! Total involved workshops: " << compressor_station.num_of_involved_workshops << std::endl;
-						break;
-					}
-					else {
-						std::cout << "All workshops are stopped now!";
-						return compressor_station;
-					}
-				}
-				else {
-					if (compressor_station.num_of_involved_workshops < compressor_station.num_of_workshops) {
-						compressor_station.num_of_involved_workshops += 1;
-						std::cout << "Workshop had been started successfully! Total involved workshops: " << compressor_station.num_of_involved_workshops << std::endl;
-						break;
-					}
-					else {
-						std::cout << "All workshops are involved now!" << std::endl;
-						return compressor_station;
-					}
-				}
+				inputs[i] = input;
+				break;
 			}
 			else {
-				std::cout << "Incorrect input! Try again!" << std::endl;
+				std::cout << "Invalid value! Try again!" << std::endl;
 			}
 		}
-
-		std::cout << "=======================================" << std::endl;
-
-		return compressor_station;
 	}
-};
+
+	cs.workshops = std::stof(inputs[0]);
+	cs.involved_workshops = std::stoi(inputs[1]);
+	cs.rang = inputs[2].c_str()[0];
+
+	return cs;
+}
+
+void csConsoleOutput(CompressorStation cs) {
+
+	std::cout << "Station name: " << cs.name << std::endl;
+	std::cout << "Number of workshops: " << cs.workshops << " km" << std::endl;
+	std::cout << "Number of involved workshops: " << cs.involved_workshops << " mm" << std::endl;
+	std::cout << "Station class: " << cs.rang << std::endl;
+
+}
+
+CompressorStation csFileInput(std::string filepath) {
+
+	CompressorStation cs;
+
+	std::regex line_pattern("^\\s*cs\\s*;\\s*(.+)\\s*;\\s*(\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(A|B|C|D|E)\\s*$");
+	std::smatch match;
+	std::ifstream file(filepath);
+	std::string line;
+
+	if (file.is_open()) {
+
+		while (std::getline(file, line)) {
+
+			if (std::regex_match(line, match, line_pattern)) {
+
+				cs.name = match[1];
+				cs.workshops = std::stoi(match[2]);
+				cs.involved_workshops = std::stoi(match[3]);
+				cs.rang = match[4].str().c_str()[0];
+
+				return cs;
+			};
+		}
+	}
+
+	std::cout << "There is some troubles with specified file! Check it";
+	return;
+}
+
+void pipelineFileOutput(std::string filepath, CompressorStation cs) {
+
+	std::ofstream file(filepath, std::ios::app);
+
+	if (file.is_open()) {
+
+		file << "cs;" << cs.name << ";" << cs.workshops << ";" << cs.involved_workshops << ";" << cs.rang << std::endl;
+	}
+}
+
+CompressorStation csInvolvedWorkshopsChanging(CompressorStation cs) {
+
+	std::regex pattern("R|S");
+	std::string input;
+
+	std::cout << "What do you want to do?\nR - start one workshop, S - stop one workshop\nEnter your choice here: ";
+	int current = cs.workshops - cs.involved_workshops;
+
+	if (0 <= current <= cs.workshops) {
+		while (true) {
+
+			std::cin >> input;
+
+			if (std::regex_match(input, pattern)) {
+
+				if (input == "R") {
+
+					cs.workshops++;
+				}
+				else {
+					cs.workshops--;
+				}
+			}
+
+			std::cout << "Invalid value! Try again!" << std::endl;
+		}
+	}
+	else {
+		std::cout << "Something goes wrong! Check number of involved workshops!";
+	}
+}
 
 void clear() {
-	
+
 	// https://ru.stackoverflow.com/questions/471914/%D0%9E%D1%87%D0%B8%D1%81%D1%82%D0%BA%D0%B0-%D0%BA%D0%BE%D0%BD%D1%81%D0%BE%D0%BB%D0%B8
 
 	std::cout << "\033[2J\033[1;1H";
@@ -431,36 +257,25 @@ void continuing() {
 	std::cout << "Enter any key to continue..." << std::endl;
 	std::cin >> smthng;
 
-	std::cout << "=================================" << std::endl;
 }
 
-int main() {
+void main() {
 
 	Pipeline pipeline;
 	CompressorStation compressor_station;
 
-	std::ofstream out("test_output.txt");
-	out.close();
-
 	while (true) {
-		
+
 		clear();
 
 		std::string input;
 		int command;
 		std::regex pattern("[0-7]");
 
-		std::cout << "=== HYDROCARBON TRANSPORTATION ===" << std::endl;
-		std::cout << "1. Create new pipeline" << std::endl;
-		std::cout << "2. Create new compressor station" << std::endl;
-		std::cout << "3. Show all objects" << std::endl;
-		std::cout << "4. Editing pipeline" << std::endl;
-		std::cout << "5. Editing compressor station" << std::endl;
-		std::cout << "6. Save in file" << std::endl;
-		std::cout << "7. Load from file" << std::endl;
-		std::cout << "=================================" << std::endl;
-		std::cout << "0. Exit" << std::endl;
-		std::cout << "=================================" << std::endl;
+		std::cout << "=== HYDROCARBON TRANSPORTATION ===" << std::endl << "1. Create new pipeline" << std::endl << "2. Create new compressor station" << std::endl;
+		std::cout << "3. Show all objects" << std::endl << "4. Editing pipeline" << std::endl << "5. Editing compressor station" << std::endl;
+		std::cout << "6. Save in file" << std::endl << "7. Load from file" << std::endl << "0. Exit" << std::endl << "=================================" << std::endl;
+
 		std::cout << "Enter a command [0-7]: ";
 		std::cin >> input;
 
@@ -477,67 +292,6 @@ int main() {
 			continuing();
 			continue;
 		}
-		
-		std::cout << "=================================" << std::endl << std::endl;
 
 		clear();
-
-		switch (command) {
-
-		case 0:
-			return 0;
-
-		case 1:
-
-			pipeline = pipeline.consoleInput();
-
-			continuing();
-			continue;
-
-		case 2:
-
-			compressor_station = compressor_station.consoleInput();
-
-			continuing();
-			continue;
-
-		case 3:
-
-			pipeline.consoleOutput(pipeline);
-			compressor_station.consoleOutput(compressor_station);
-
-			continuing();
-			continue;
-
-		case 4:
-			
-			pipeline = pipeline.repairmentStatusChanging(pipeline);
-
-			continuing();
-			continue;
-
-		case 5:
-
-			compressor_station = compressor_station.startStopWorkshop(compressor_station);
-
-			continuing();
-			continue;
-
-		case 6:
-
-			pipeline.fileOutput(pipeline, "test_output.txt");
-			compressor_station.fileOutput(compressor_station, "test_output.txt");
-
-			continuing();
-			continue;
-
-		case 7:
-
-			pipeline = pipeline.fileInput("test_input.txt");
-			compressor_station = compressor_station.fileInput("test_input.txt");
-
-			continuing();
-			continue;
-		}
-	}
 }
