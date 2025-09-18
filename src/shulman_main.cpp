@@ -8,7 +8,7 @@ struct Pipeline {
 	std::string name = ""; // kilometer mark
 	float length = 0;
 	int diameter = 0;
-	bool status = -1; // repairment status
+	bool status = 1; // repairment status
 
 };
 
@@ -70,7 +70,7 @@ Pipeline pipelineFileInput(std::string filepath) {
 
 	Pipeline pipeline;
 
-	std::regex line_pattern("^\\s*p\\s*;\\s*(.+)\\s*;\\s*(\\d+\\.\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(0|1)\\s*$");
+	std::regex line_pattern("\\s*p\\s*;\\s*(.+)\\s*;\\s*(\\d+\\.\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(0|1)\\s*");
 	std::smatch match;
 	std::ifstream file(filepath);
 	std::string line;
@@ -91,7 +91,7 @@ Pipeline pipelineFileInput(std::string filepath) {
 		}
 	}
 
-	std::cout << "There is some troubles with specified file! There is no pipeline! Check it";
+	std::cout << "There is some troubles with specified file! There is no pipeline! Check it" << std::endl;
 	return pipeline;
 }
 
@@ -166,7 +166,7 @@ CompressorStation csConsoleInput() {
 		return cs;
 	}
 
-	cs.workshops = std::stof(inputs[0]);
+	cs.workshops = std::stoi(inputs[0]);
 	cs.involved_workshops = std::stoi(inputs[1]);
 	cs.rang = inputs[2].c_str()[0];
 
@@ -184,7 +184,7 @@ CompressorStation csFileInput(std::string filepath) {
 
 	CompressorStation cs;
 
-	std::regex line_pattern("^\\s*cs\\s*;\\s*(.+)\\s*;\\s*(\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(A|B|C|D|E)\\s*$");
+	std::regex line_pattern("\\s*cs\\s*;\\s*(.+)\\s*;\\s*(\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(A|B|C|D|E)\\s*");
 	std::smatch match;
 	std::ifstream file(filepath);
 	std::string line;
@@ -205,7 +205,7 @@ CompressorStation csFileInput(std::string filepath) {
 		}
 	}
 
-	std::cout << "There is some troubles with specified file! There is no comperessor station! Check it";
+	std::cout << "There is some troubles with specified file! There is no comperessor station! Check it" << std::endl;
 	return cs;
 }
 
@@ -224,33 +224,34 @@ CompressorStation csInvolvedWorkshopsChanging(CompressorStation cs) {
 	std::regex pattern("R|S");
 	std::string input;
 
-	std::cout << "What do you want to do?\nR - start one workshop, S - stop one workshop\nEnter your choice here: ";
-	int current = cs.workshops - cs.involved_workshops;
+	std::cout << "What do you want to do?\nR - start one workshop, S - stop one workshop" << std::endl;
 
-	if (0 < current < cs.workshops) {
+	if (0 < (cs.workshops - cs.involved_workshops) < cs.workshops) {
+
+		std::cout << "Something goes wrong! Check number of involved workshops!" << std::endl;
+		return cs;
+	}
+	else {
 		while (true) {
-
+			
+			std::cout << "Enter your choice here: ";
 			std::cin >> input;
 
 			if (std::regex_match(input, pattern)) {
 
 				if (input == "R") {
 
-					++cs.involved_workshops;
+					cs.involved_workshops++;
 					return cs;
 				}
 				else {
-					--cs.involved_workshops;
+					cs.involved_workshops--;
 					return cs;
 				}
 			}
 
 			std::cout << "Invalid value! Try again!" << std::endl;
 		}
-	}
-	else {
-		std::cout << "Something goes wrong! Check number of involved workshops!";
-		return cs;
 	}
 }
 
@@ -275,9 +276,6 @@ int main() {
 
 	Pipeline pipeline;
 	CompressorStation cs;
-
-	bool p_exists = 0;
-	bool cs_exists = 0;
 
 	std::string inpath = "test_input.txt";
 	std::string outpath = "test_output.txt";
@@ -319,46 +317,44 @@ int main() {
 
 		case 1:
 			pipeline = pipelineConsoleInput();
-			p_exists = 1;
 
 			continuing(); continue;
 
 		case 2:
 			cs = csConsoleInput();
-			cs.workshops > 0 ? cs_exists = 1 : cs_exists = 0;
 
 			continuing(); continue;
 
 		case 3:
 
-			if (p_exists) { pipelineConsoleOutput(pipeline); }
+			if (pipeline.diameter != 0) { pipelineConsoleOutput(pipeline); }
 			else { std::cout << "There is no created pipeline!" << std::endl; }
 
-			if (cs_exists) { csConsoleOutput(cs); }
+			if (cs.workshops != 0) { csConsoleOutput(cs); }
 			else { std::cout << "There is no created compressor station!" << std::endl; }
 
 			continuing(); continue;
 
 		case 4:
 
-			if (p_exists) { pipeline = pipelineStatusChanging(pipeline); }
+			if (pipeline.diameter != 0) { pipeline = pipelineStatusChanging(pipeline); }
 			else { std::cout << "There is no created pipeline!" << std::endl; }
 
 			continuing(); continue;
 
 		case 5:
 
-			if (cs_exists) { cs = csInvolvedWorkshopsChanging(cs); }
+			if (cs.workshops != 0) { cs = csInvolvedWorkshopsChanging(cs); }
 			else { std::cout << "There is no created compressor station!" << std::endl; }
 
 			continuing(); continue;
 
 		case 6:
 
-			if (p_exists) { pipelineFileOutput(outpath, pipeline); }
+			if (pipeline.diameter != 0) { pipelineFileOutput(outpath, pipeline); }
 			else { std::cout << "There is no created pipeline!" << std::endl; }
 
-			if (cs_exists) { csFileOutput(outpath, cs); }
+			if (cs.workshops != 0) { csFileOutput(outpath, cs); }
 			else { std::cout << "There is no created compressor station!" << std::endl; }
 
 			std::cout << "Loading in file process had ended" << std::endl;
@@ -368,9 +364,6 @@ int main() {
 		case 7:
 			pipeline = pipelineFileInput(inpath);
 			cs = csFileInput(inpath);
-
-			if (pipeline.diameter != 0) { p_exists = 1; }
-			if (cs.workshops != 0) { cs_exists = 1; }
 
 			std::cout << "Loading from file process had ended" << std::endl;
 
