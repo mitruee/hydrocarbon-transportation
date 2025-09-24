@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <regex>
+#include <limits>
 
 struct Pipeline {
 	
@@ -25,14 +26,18 @@ Pipeline pipelineConsoleInput() {
 
 	Pipeline pipeline;
 
-	std::cout << "=== PIPELINE CREATION MODE ===" << std::endl << "Enter a kilometer mark: ";
-	std::cin >> pipeline.name;
+	std::cout << "=== PIPELINE CREATION MODE ===" << std::endl << "Enter a kilometer mark: " << std::endl;
+	std::getline(std::cin, pipeline.name);
 	pipeline.status = 0;
 
 	std::vector<std::string> outputs = {"Enter a length [real number]: ", "Enter a diameter [integer]: "};
 	std::vector<std::string> patterns = {"\\d+\\.\\d+", "\\d+"};
 	std::vector<std::string> inputs(2);
 	std::string input;
+
+	if (std::cin.peek() == '\n') {
+		std::cin.ignore();
+	}
 
 	for (int i{ 0 }; i < 2; i++) {
 
@@ -279,8 +284,7 @@ int main() {
 	bool p_exists = 0;
 	bool cs_exists = 0;
 
-	std::string inpath = "test_input.txt";
-	std::string outpath = "test_output.txt";
+	std::string path = "test.txt";
 
 	while (true) {
 
@@ -321,13 +325,13 @@ int main() {
 			pipeline = pipelineConsoleInput();
 			p_exists = 1;
 
-			continuing(); continue;
+			continuing(); break;
 
 		case 2:
 			cs = csConsoleInput();
 			cs.workshops > 0 ? cs_exists = 1 : cs_exists = 0;
 
-			continuing(); continue;
+			continuing(); break;
 
 		case 3:
 
@@ -337,44 +341,47 @@ int main() {
 			if (cs_exists) { csConsoleOutput(cs); }
 			else { std::cout << "There is no created compressor station!" << std::endl; }
 
-			continuing(); continue;
+			continuing(); break;
 
 		case 4:
 
 			if (p_exists) { pipeline = pipelineStatusChanging(pipeline); }
 			else { std::cout << "There is no created pipeline!" << std::endl; }
 
-			continuing(); continue;
+			continuing(); break;
 
 		case 5:
 
 			if (cs_exists) { cs = csInvolvedWorkshopsChanging(cs); }
 			else { std::cout << "There is no created compressor station!" << std::endl; }
 
-			continuing(); continue;
+			continuing(); break;
 
 		case 6:
+		{
+			std::ofstream file(path);
+			file.close();
 
-			if (p_exists) { pipelineFileOutput(outpath, pipeline); }
+			if (p_exists) { pipelineFileOutput(path, pipeline); }
 			else { std::cout << "There is no created pipeline!" << std::endl; }
 
-			if (cs_exists) { csFileOutput(outpath, cs); }
+			if (cs_exists) { csFileOutput(path, cs); }
 			else { std::cout << "There is no created compressor station!" << std::endl; }
 
 			std::cout << "Loading in file process had ended" << std::endl;
 
-			continuing(); continue;
-
+			continuing(); break;
+		}
 		case 7:
-			pipeline = pipelineFileInput(inpath);
-			cs = csFileInput(inpath);
+			pipeline = pipelineFileInput(path);
+			cs = csFileInput(path);
 
 			if (pipeline.diameter != 0) { p_exists = 1; }
 			if (cs.workshops != 0) { cs_exists = 1; }
 
 			std::cout << "Loading from file process had ended" << std::endl;
 
-			continuing(); continue;
+			continuing(); break;
 		}
 	}
 }
