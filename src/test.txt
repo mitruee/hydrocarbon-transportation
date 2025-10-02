@@ -1,2 +1,1 @@
-p;48 kilometer;48.2;1500;0
-cs;Hanti-Mansiiskaya okruzhnaya;23;21;A
+cs;ks 1;8;0;A

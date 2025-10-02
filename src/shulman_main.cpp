@@ -56,7 +56,7 @@ char rang() {
 		std::cout << "Enter [A-E]: ";
 		std::cin >> rang;
 
-		if (std::cin.fail() || rang < 65 || rang > 69) {
+		if (std::cin.fail() || rang < 'A' || rang > 'E') {
 			std::cout << "Invalid value! Please, try again." << std::endl;
 			cin_clear();
 		}
@@ -69,7 +69,7 @@ char rang() {
 	return rang;
 }
 
-char boolean() {
+int boolean() {
 	int boolean;
 
 	while (true) {
@@ -86,7 +86,7 @@ char boolean() {
 	}
 	cin_clear();
 
-	return bool(boolean);            
+	return boolean;            
 }
 
 struct Pipeline {
@@ -106,10 +106,10 @@ struct CompressorStation {
 Pipeline pipelineConsoleInput() {
 	Pipeline p;
 
-	cin_clear();
+	//cin_clear();
 
 	std::cout << "=== COMPRESSOR CREATION MODE ===" << std::endl << "Enter pipeline name: ";
-	std::getline(std::cin, p.name);
+	std::getline(std::cin>>std::ws, p.name);
 	std::cout << "Pipeline length. ";
 	p.length = real();
 	std::cout << "Pipeline diameter. ";
@@ -239,18 +239,15 @@ void csInvolvedWorkshopsChanging(CompressorStation& cs) {
 
 	std::cout << "What do you want to do?\n1 - start one workshop, 0 - stop one workshop" << std::endl;
 
-	if (cs.involved_workshops < cs.workshops) {
-		std::cout << "What do you want to do? ";
-		flag = boolean();
-		if (flag = 1) {
-			cs.involved_workshops++;
-		}
-		else {
-			cs.involved_workshops--;
-		}
+	std::cout << "What do you want to do? ";
+	flag = boolean();
+	if (flag == 1) {
+		cs.involved_workshops++;
+		if (cs.involved_workshops > cs.workshops) { std::cout<<"Number of involved workshops cannot be more than total workshops"<<std::endl; cs.involved_workshops--; }
 	}
 	else {
-		std::cout << "Something goes wrong! Check number of involved workshops!" << std::endl;
+		cs.involved_workshops--;
+		if (cs.involved_workshops < 0) { std::cout<<"Number of involved workshops cannot be less than 0"<<std::endl; cs.involved_workshops++; }
 	}
 }
 
