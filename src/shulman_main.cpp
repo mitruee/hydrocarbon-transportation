@@ -27,7 +27,7 @@ int integer() {
 	cin_clear();
 
 	return number;
-};
+}
 
 float real() {
 	float number;
@@ -89,167 +89,149 @@ int boolean() {
 	return boolean;            
 }
 
-struct Pipeline {
-	std::string name = ""; // kilometer mark
-	float length = 0;
-	int diameter = 0;
-	bool status = -1; // repairment status
+class Metadata {
+private:
+
+	int id;
+
+public:
+
+	void setID(int new_id) { id = new_id; }
+	const int &getID() const { return id; }
 };
 
-struct CompressorStation {
-	std::string name = "";
-	int workshops = 0;
-	int involved_workshops = 0;
-	char rang = 0; // station class
+class Pipeline {
+private:
+	
+	int id;
+	std::string name; // kilometer mark
+	float length;
+	int diameter;
+	bool status; // repairment status
+
+public:
+
+	Pipeline(Metadata md, std::string n, float l, int d, bool s) {
+
+		id = md.getID();
+		name = n;
+		length = l;
+		diameter = d;
+		status = s;
+
+	}
+
+	void setStatus(bool new_status) { status = new_status; }
+
+	const int &getID() const { return id; }
+	const std::string &getName() const { return name; }
+	const float &getLength() const { return length; }
+	const int &getDiameter() const { return diameter; }
+	const bool &getStatus() const { return status; }
+
+	void pipelineConsoleInput() {
+
+		cin_clear();
+		
+		std::cout << "=== COMPRESSOR CREATION MODE ===" << std::endl;
+		std::cout << "Enter pipeline name: "; std::getline(std::cin>>std::ws, name);
+		std::cout << "Pipeline length. "; length = real();
+		std::cout << "Pipeline diameter. "; diameter = integer();
+		status = 0;
+	}
+
+	void pipelineFileInput(std::string filepath) {
+		std::regex line_pattern("^\\s*(\\d+)\\s*;\\s*p\\s*;\\s*(.+)\\s*;\\s*(\\d+\\.\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(0|1)\\s*$");
+		std::smatch match;
+		std::ifstream file(filepath);
+		std::string line;
+
+		if (file.is_open()) {
+			while (std::getline(file, line)) {
+				if (std::regex_match(line, match, line_pattern)) {
+					id = std::stoi(match[1]);
+					name = match[2];
+					length = std::stof(match[3]);
+					diameter = std::stoi(match[4]);
+					status = std::stoi(match[5]);
+				};
+			}
+		}
+	}
 };
 
-Pipeline pipelineConsoleInput() {
-	Pipeline p;
+class CompressorStation {
+private:
 
-	//cin_clear();
+	int id;
+	std::string name;
+	int workshops;
+	int involved_workshops;
+	char rang; // station class
 
-	std::cout << "=== COMPRESSOR CREATION MODE ===" << std::endl << "Enter pipeline name: ";
-	std::getline(std::cin>>std::ws, p.name);
-	std::cout << "Pipeline length. ";
-	p.length = real();
-	std::cout << "Pipeline diameter. ";
-	p.diameter = integer();
-	p.status = 0;
+public:
 
-	return p;
-}
+	CompressorStation(Metadata md, std::string n, int w, int iw, char r) {
 
-void pipelineConsoleOutput(Pipeline pipeline) {
-	std::cout << "=== PIPELINE ===" << std::endl
-	<< "Kilometer mark: " << pipeline.name << std::endl
-	<< "Length: " << pipeline.length << " km" << std::endl
-	<< "Diameter: " << pipeline.diameter << " mm" << std::endl
-	<< "Repairment status: " << pipeline.status << std::endl;
+		id = md.getID();
+		name = n;
+		workshops = w;
+		involved_workshops = iw;
+		rang = r;
 
-}
+	}
 
-Pipeline pipelineFileInput(std::string filepath) {
-	Pipeline pipeline;
-	std::regex line_pattern("^\\s*p\\s*;\\s*(.+)\\s*;\\s*(\\d+\\.\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(0|1)\\s*$");
-	std::smatch match;
-	std::ifstream file(filepath);
-	std::string line;
+	void setIW(int new_iw) { involved_workshops = new_iw; }
 
-	if (file.is_open()) {
-		while (std::getline(file, line)) {
-			if (std::regex_match(line, match, line_pattern)) {
-				pipeline.name = match[1];
-				pipeline.length = std::stof(match[2]);
-				pipeline.diameter = std::stoi(match[3]);
-				pipeline.status = std::stoi(match[4]);
-				return pipeline;
-			};
+	const int &getID() const { return id; }
+	const std::string &getName() const { return name; }
+	const float &getWorkshops() const { return workshops; }
+	const int &getIW() const { return involved_workshops; }
+	const bool &getRang() const { return rang; }
+
+	void csConsoleInput() {
+
+		cin_clear();
+
+		std::cout << "=== COMPRESSOR CREATION MODE ===" << std::endl;
+		std::cout << "Enter a station name: "; std::getline(std::cin, name);
+		std::cout << "Number of workshops. "; workshops = integer();
+		std::cout << "Number of involved workshops. ";
+		while (true) {
+			involved_workshops = integer();
+			if (involved_workshops > workshops) {
+				std::cout << "Number of involved workshops cannot be more than total workshops! ";
+			}
+			else {
+				break;
+			}
+		}
+
+	}
+
+	void csFileInput(std::string filepath) {
+
+		std::regex line_pattern("^\\s*(\\d+)\\s*;\\s*cs\\s*;\\s*(.+)\\s*;\\s*(\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(A|B|C|D|E)\\s*$");
+		std::smatch match;
+		std::ifstream file(filepath);
+		std::string line;
+
+		if (file.is_open()) {
+			while (std::getline(file, line)) {
+				if (std::regex_match(line, match, line_pattern)) {
+					if (0 < std::stoi(match[4]) < std::stoi(match[3])) {
+						id = std::stoi(match[1]);
+						name = match[2];
+						workshops = std::stoi(match[3]);
+						involved_workshops = std::stoi(match[4]);
+						rang = match[5].str().c_str()[0];
+					};
+				};
+			}
 		}
 	}
 
-	std::cout << "There is some troubles with specified file! There is no pipeline! Check it";
-	return pipeline;
-}
-
-void pipelineFileOutput(std::string filepath, Pipeline pipeline) {
-	std::ofstream file(filepath, std::ios::app);
-
-	if (file.is_open()) {
-		file << "p;" << pipeline.name << ";" << pipeline.length << ";" << pipeline.diameter << ";" << pipeline.status << std::endl;
-	}
-}
-
-void pipelineStatusChanging(Pipeline& pipeline) {
-	int status;
-
-	std::cout << "Change repairment status [0 if not in repair else 1]: ";
-
-	status = boolean();
-	pipeline.status = status;
-
-}
-
-CompressorStation csConsoleInput() {
-	CompressorStation cs;
-
-	cin_clear();
-
-	std::cout << "=== COMPRESSOR CREATION MODE ===" << std::endl << "Enter a station name: ";
-	std::getline(std::cin, cs.name);
-	std::cout << "Number of workshops. ";
-	cs.workshops = integer();
-	std::cout << "Number of involved workshops. ";
-	while (true) {
-		cs.involved_workshops = integer();
-		if (cs.involved_workshops > cs.workshops) {
-			std::cout << "Number of involved workshops cannot be more than total workshops! ";
-		}
-		else {
-			break;
-		}
-	}
-	std::cout << "Station class. ";
-	cs.rang = rang();
-
-	return cs;
-}
-
-void csConsoleOutput(CompressorStation cs) {
-	std::cout << "=== COMPRESSOR STATION ===" << std::endl
-	<< "Station name: " << cs.name << std::endl
-	<< "Number of workshops: " << cs.workshops << std::endl
-	<< "Number of involved workshops: " << cs.involved_workshops << std::endl
-	<< "Station class: " << cs.rang << std::endl;
-}
-
-CompressorStation csFileInput(std::string filepath) {
-	CompressorStation cs;
-
-	std::regex line_pattern("^\\s*cs\\s*;\\s*(.+)\\s*;\\s*(\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(A|B|C|D|E)\\s*$");
-	std::smatch match;
-	std::ifstream file(filepath);
-	std::string line;
-
-	if (file.is_open()) {
-		while (std::getline(file, line)) {
-			if (std::regex_match(line, match, line_pattern)) {
-				cs.name = match[1];
-				cs.workshops = std::stoi(match[2]);
-				cs.involved_workshops = std::stoi(match[3]);
-				cs.rang = match[4].str().c_str()[0];
-				return cs;
-			};
-		}
-	}
-
-	std::cout << "There is some troubles with specified file! There is no comperessor station! Check it";
-	return cs;
-}
-
-void csFileOutput(std::string filepath, CompressorStation cs) {
-	std::ofstream file(filepath, std::ios::app);
-
-	if (file.is_open()) {
-		file << "cs;" << cs.name << ";" << cs.workshops << ";" << cs.involved_workshops << ";" << cs.rang << std::endl;
-	}
-}
-
-void csInvolvedWorkshopsChanging(CompressorStation& cs) {
-	bool flag;
-
-	std::cout << "What do you want to do?\n1 - start one workshop, 0 - stop one workshop" << std::endl;
-
-	std::cout << "What do you want to do? ";
-	flag = boolean();
-	if (flag == 1) {
-		cs.involved_workshops++;
-		if (cs.involved_workshops > cs.workshops) { std::cout<<"Number of involved workshops cannot be more than total workshops"<<std::endl; cs.involved_workshops--; }
-	}
-	else {
-		cs.involved_workshops--;
-		if (cs.involved_workshops < 0) { std::cout<<"Number of involved workshops cannot be less than 0"<<std::endl; cs.involved_workshops++; }
-	}
-}
+};
 
 void clear() {
 	// https://ru.stackoverflow.com/questions/471914/%D0%9E%D1%87%D0%B8%D1%81%D1%82%D0%BA%D0%B0-%D0%BA%D0%BE%D0%BD%D1%81%D0%BE%D0%BB%D0%B8
@@ -306,7 +288,6 @@ int main() {
 		case 0:
 			return 0;
 		case 1:
-			pipeline = pipelineConsoleInput();
 
 			continuing(); continue;
 		case 2:
@@ -314,45 +295,15 @@ int main() {
 
 			continuing(); continue;
 		case 3:
-			if (pipeline.diameter != 0) { pipelineConsoleOutput(pipeline); }
-			else { std::cout << "There is no created pipeline!" << std::endl; }
-			if (cs.workshops != 0) { csConsoleOutput(cs); }
-			else { std::cout << "There is no created compressor station!" << std::endl; }
-
+		
 			continuing(); continue;
 		case 4:
-			if (pipeline.diameter != 0) { pipelineStatusChanging(pipeline); }
-			else { std::cout << "There is no created pipeline!" << std::endl; }
-
 			continuing(); continue;
 		case 5:
-			if (cs.workshops != 0) { csInvolvedWorkshopsChanging(cs); continuing(); continue; }
-			else {
-				std::cout << "There is no created compressor station!" << std::endl;
-
 				continuing(); continue;
 		case 6:
-		{
-			std::ofstream file(path);
-			file.close();
-
-			if (pipeline.diameter != 0) { pipelineFileOutput(path, pipeline); }
-			else { std::cout << "There is no created pipeline!" << std::endl; }
-			if (cs.workshops != 0) { csFileOutput(path, cs); }
-			else { std::cout << "There is no created compressor station!" << std::endl; }
-
-			std::cout << "Loading in file process had ended" << std::endl;
-
-			continuing(); continue;
-		}
 		case 7:
-			pipeline = pipelineFileInput(path);
-			cs = csFileInput(path);
-
-			std::cout << "Loading from file process had ended" << std::endl;
-
 			continuing(); continue;
-			}
 		}
 	}
 }
