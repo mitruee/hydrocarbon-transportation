@@ -135,6 +135,7 @@ private:
 
 public:
     Pipeline() : name(""), length(0.0f), diameter(0), status(false) {}
+	Pipeline(std::string name, float length, int diameter, bool status) : name(name), length(length), diameter(diameter), status(status) {}
 
     void setStatus(bool new_status) { status = new_status; }
 
@@ -152,9 +153,6 @@ public:
         std::cout << "Pipeline diameter. "; diameter = integer();
         status = 0;
     }
-
-    //    std::regex line_pattern("^\\s*(\\d+)\\s*;\\s*p\\s*;\\s*(.+)\\s*;\\s*(\\d+\\.\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(0|1)\\s*$");
-
 };
 
 class CompressorStation {
@@ -166,6 +164,7 @@ private:
 
 public:
     CompressorStation() : name(""), workshops(0), involved_workshops(0), st_class(0) {}
+	CompressorStation(std::string name, int workshops, int involved_workshops, char st_class) : name(name), workshops(workshops), involved_workshops(involved_workshops), st_class(st_class) {}
 
     void setIW(int new_iw) { involved_workshops = new_iw; }
 
@@ -192,10 +191,6 @@ public:
         }
         std::cout << "Station class. "; st_class = rang();
     }
-
-
-    //    std::regex line_pattern("^\\s*(\\d+)\\s*;\\s*cs\\s*;\\s*(.+)\\s*;\\s*(\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(A|B|C|D|E)\\s*$");
-
 };
 
 void clear() {
@@ -294,34 +289,32 @@ void searchObjects(const std::unordered_map<int, Pipeline>& pls,
 void displayObjects(const std::unordered_map<int, Pipeline>& pls,
                    const std::unordered_map<int, CompressorStation>& css,
                    const std::unordered_map<int, Pipeline>& filtered_pls,
-                   const std::unordered_map<int, CompressorStation>& filtered_css) {
+                   const std::unordered_map<int, CompressorStation>& filtered_css, 
+				   const Metadata md) {
     
     std::cout << "Objects in format (id; type; type's attributes)" << std::endl;
     std::cout << "===================================================" << std::endl;
     
     if (filtered_pls.empty() && filtered_css.empty()) {
-        for (const auto& [id, pipeline] : pls) {
-            std::cout << id << " pipeline " << pipeline.getName() << " " 
-                      << pipeline.getLength() << " " << pipeline.getDiameter() 
-                      << " " << pipeline.getStatus() << std::endl;
-        }
-        for (const auto& [id, station] : css) {
-            std::cout << id << " compressor station " << station.getName() << " " 
-                      << station.getWorkshops() << " " << station.getIW() 
-                      << " " << station.getRang() << std::endl;
-        }
-    } else {
-        for (const auto& [id, pipeline] : filtered_pls) {
-            std::cout << id << " pipeline " << pipeline.getName() << " " 
-                      << pipeline.getLength() << " " << pipeline.getDiameter() 
-                      << " " << pipeline.getStatus() << std::endl;
-        }
-        for (const auto& [id, station] : filtered_css) {
-            std::cout << id << " compressor station " << station.getName() << " " 
-                      << station.getWorkshops() << " " << station.getIW() 
-                      << " " << station.getRang() << std::endl;
-        }
-    }
+		for (int id = 1; id <= md.getID(); id++) {
+			if (pls.count(id)) {
+				std::cout << id << " pipeline " << pls.at(id).getName() << " " << pls.at(id).getLength() << " " << pls.at(id).getDiameter() << " " << pls.at(id).getStatus() << std::endl;
+			}
+			if (css.count(id)) {
+				std::cout << id << " compressor station " << css.at(id).getName() << " " << css.at(id).getWorkshops() << " " << css.at(id).getIW() << " " << css.at(id).getRang() << std::endl;
+			}
+		}
+	}
+	else {
+		for (int id = 1; id <= md.getID(); id++) {
+			if (filtered_pls.count(id)) {
+				std::cout << id << " pipeline " << filtered_pls.at(id).getName() << " " << filtered_pls.at(id).getLength() << " " << filtered_pls.at(id).getDiameter() << " " << filtered_pls.at(id).getStatus() << std::endl;
+			}
+			if (filtered_css.count(id)) {
+				std::cout << id << " compressor station " << filtered_css.at(id).getName() << " " << filtered_css.at(id).getWorkshops() << " " << filtered_css.at(id).getIW() << " " << filtered_css.at(id).getRang() << std::endl;
+			}
+		}
+	}
     std::cout << "===================================================" << std::endl;
 }
 
@@ -336,7 +329,7 @@ void objectManagement(std::unordered_map<int, Pipeline>& pls,
         clear();
         
         std::cout << "=== OBJECT MANAGEMENT ===" << std::endl;
-        displayObjects(pls, css, filtered_pls, filtered_css);
+        displayObjects(pls, css, filtered_pls, filtered_css, md);
         
         std::cout << "1. Search objects" << std::endl;
         std::cout << "2. Edit searched objects" << std::endl;
@@ -458,6 +451,9 @@ int main() {
     std::unordered_map<int, Pipeline> pls = {};
     std::unordered_map<int, CompressorStation> css = {};
     Metadata md;
+	std::regex line_pattern1("^\\s*(\\d+)\\s*;\\s*p\\s*;\\s*(.+)\\s*;\\s*(\\d+\\.\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(0|1)\\s*$");
+	std::regex line_pattern2("^\\s*(\\d+)\\s*;\\s*cs\\s*;\\s*(.+)\\s*;\\s*(\\d+)\\s*;\\s*(\\d+)\\s*;\\s*(A|B|C|D|E)\\s*$");
+ 
 
     while (true) {
         clear();
@@ -517,21 +513,53 @@ int main() {
                 std::string filepath = fp();
 				std::ofstream file(filepath);
 
-				if (file.is_open()) {
+				if (file.is_open() && md.getID() != 0) {
 					for (int i = 1; i <= md.getID(); i++) {
 						if (pls.count(i)) {
-							file << i << ";p;" << pls[i].getName() << ";" << pls[i].getLength() << ";" << pls[i].getDiameter() << ";" << pls[i].getStatus();
+							file << i << ";p;" << pls[i].getName() << ";" << pls[i].getLength() << ";" << pls[i].getDiameter() << ";" << pls[i].getStatus() << std::endl;
 						}
 						else if (css.count(i)) {
-							file << i << ";cs;" << css[i].getName() << ";" << css[i].getWorkshops() << ";" << css[i].getIW() << ";" << css[i].getRang();
+							file << i << ";cs;" << css[i].getName() << ";" << css[i].getWorkshops() << ";" << css[i].getIW() << ";" << css[i].getRang() << std::endl;
 						}
 					}
+				}
+				else {
+					std::cout << "Some troubles with specified files or there is no data to save!";
 				}
 
                 continuing(); break;
             }
             case 5: {
-                std::cout << "Load functionality not implemented yet." << std::endl;
+                std::string filepath = fp();
+				std::ifstream file(filepath);
+				std::smatch match;
+				std::string line;
+				int cur_id;
+				int max_id;
+
+				if (file.is_open()) {
+					while (std::getline(file, line)) {
+						if (std::regex_match(line, match, line_pattern1)) {
+							Pipeline p(match[2], std::stof(match[3]), std::stoi(match[4]), std::stoi(match[5]));
+							cur_id = std::stoi(match[1]);
+							pls[cur_id] = p;
+							if (max_id < cur_id) {
+								max_id = cur_id;
+							}
+						};
+						if (std::regex_match(line, match, line_pattern2)) {
+							CompressorStation cs(match[2], std::stoi(match[3]), std::stoi(match[4]), match[5].str().c_str()[0]);
+							cur_id = std::stoi(match[1]);
+							css[cur_id] = cs;
+							if (max_id < cur_id) {
+								max_id = cur_id;
+							}
+						};
+					}
+				}
+
+				md.setID(max_id);
+
                 continuing(); break;
             }
         }
