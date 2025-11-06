@@ -1,5 +1,4 @@
 #pragma once
-#include "windows.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -9,6 +8,10 @@
 #include <vector>
 #include <iomanip>
 #include <sstream>
+
+
+class Pipeline;
+class CompressorStation;
 
 #define INPUT_LINE(in, str) getline(in>>std::ws, str); std::cerr << str << std::endl
 
@@ -48,3 +51,25 @@ T getCorrectValue(T min, T max)
 	std::cerr << x << std::endl;
 	return x;
 }
+
+template <typename T>
+void getMaxID(std::unordered_map<int, T> un_map, int& max_id)
+{
+    for (const auto& pair : un_map)
+    {
+        if (max_id < pair.first)
+        {
+            max_id = pair.first;
+        }
+    }
+}
+
+void move_terminal();
+int getID();
+
+void printMainMenu();
+void printObjectManagementMenu(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css);
+
+void saveInFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id);
+void loadFromFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css);
+

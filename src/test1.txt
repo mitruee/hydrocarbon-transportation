@@ -1,6 +1,36 @@
-1;p;p1;12.5;1200;1
-2;p;p2;15.3;1500;0
-3;cs;cs1;10;4;A
-4;cs;cs2;10;8;B
-5;p;p3;10.3;1600;0
-6;cs;cs3;10;9;A
+1
+p
+pipeline pipeline 123
+10.4
+1500
+0
+2
+p
+pipeline linepipe 321
+10.2
+1600
+1
+3
+cs
+compressor station main
+10
+5
+A
+4
+cs
+main main compressor cs
+10
+5
+B
+5
+p
+pipe pipe line
+10.9
+1500
+0
+6
+cs
+foo bar baz
+10
+5
+C

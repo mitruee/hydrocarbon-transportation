@@ -4,7 +4,6 @@
 class Pipeline 
 {
 private:
-    int id;
     std::string name;
     float length;
     int diameter;
@@ -12,20 +11,19 @@ private:
 
 public:
     Pipeline();
-    Pipeline(int id, std::string name, float length, int diameter, bool status);
+    Pipeline(std::string name, float length, int diameter, bool status);
 
-    void setID(int new_id);
     void setStatus(bool new_status);
 
-    const int &getID() const;
     const std::string &getName() const;
     const float getLength() const;
     const int getDiameter() const;
     const bool getStatus() const;
 
-    void savePipeline(std::ofstream& outstream);
+    void savePipeline(std::ofstream& outfstream);
+    void loadPipeline(std::ifstream& infstream);
 
-    bool checkByID();
+    bool checkByName();
     bool checkByStatus();
 
     friend std::istream& operator >> (std::istream& instream, Pipeline& pipe);
