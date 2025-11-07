@@ -32,6 +32,25 @@ void CompressorStation::loadCS(std::ifstream& infstream)
     }
 }
 
+bool CompressorStation::checkByName(std::string check_name)
+{
+    if (name == check_name)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+bool CompressorStation::checkByPercentage(int check_per)
+{
+    int per = (1 - (involved_workshops / workshops)) * 100;
+    if (per == check_per)
+    {
+        return 1;
+    }
+    return 0;
+}
+
 std::istream& operator >> (std::istream& instream, CompressorStation& cs)
 {
 

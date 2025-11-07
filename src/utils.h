@@ -52,23 +52,16 @@ T getCorrectValue(T min, T max)
 	return x;
 }
 
-template <typename T>
-void getMaxID(std::unordered_map<int, T> un_map, int& max_id)
-{
-    for (const auto& pair : un_map)
-    {
-        if (max_id < pair.first)
-        {
-            max_id = pair.first;
-        }
-    }
-}
-
 void move_terminal();
 int getID();
+void getMaxID(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int& max_id);
 
 void printMainMenu();
-void printObjectManagementMenu(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css);
+void printObjectManagementMenu(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id);
+int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id);
+void search(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int>& ids, bool object_type, int max_id);
+void plsFilter(std::unordered_map<int, Pipeline> pls, std::vector<int>& ids);
+void cssFilter(std::unordered_map<int, CompressorStation> css, std::vector<int>& ids);
 
 void saveInFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id);
 void loadFromFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css);

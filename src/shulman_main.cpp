@@ -27,6 +27,7 @@ int main()
 
     unordered_map<int, Pipeline> pls;
     unordered_map<int, CompressorStation> css;
+    int max_id = 0;
 
     while(1)
     {
@@ -41,6 +42,8 @@ int main()
             
             case 1:
             {
+                move_terminal();
+
                 Pipeline p;
 
                 cin >> p;
@@ -53,6 +56,8 @@ int main()
 
             case 2:
             {
+                move_terminal();
+
                 CompressorStation cs;
 
                 cin >> cs;
@@ -65,16 +70,19 @@ int main()
 
             case 3:
             {
+                move_terminal();
+
+                getMaxID(pls, css, max_id);
+                objectManagementLogic(pls, css, max_id);
+
                 break;
             }
 
             case 4:
             {
-                int max_id = 0;
+                move_terminal();
 
-                getMaxID(pls, max_id);
-                getMaxID(css, max_id);
-
+                getMaxID(pls, css, max_id);
                 saveInFile(pls, css, max_id);
 
                 break;
@@ -82,12 +90,10 @@ int main()
 
             case 5:
             {
+                move_terminal();
+
                 loadFromFile(pls, css);
-
-                int max_id = 0;
-
-                getMaxID(pls, max_id);
-                getMaxID(css, max_id);
+                getMaxID(pls, css, max_id);
 
                 while (getID() < max_id) { }
 

@@ -36,6 +36,24 @@ void Pipeline::loadPipeline(std::ifstream& infstream)
     }
 }
 
+bool Pipeline::checkByName(std::string check_name)
+{
+    if (name == check_name)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+bool Pipeline::checkByStatus(bool check_status)
+{
+    if (status == check_status)
+    {
+        return 1;
+    }
+    return 0;
+}
+
 std::istream& operator >> (std::istream& instream, Pipeline& pipeline)
 {
     std::cout << "Enter name: ";

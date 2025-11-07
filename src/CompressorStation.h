@@ -23,8 +23,8 @@ public:
     void saveCS(std::ofstream& outfstream);
     void loadCS(std::ifstream& infstream);
 
-    bool checkByName();
-    bool checkByPercentage();
+    bool checkByName(std::string check_name);
+    bool checkByPercentage(int check_per);
 
     friend std::istream& operator >> (std::istream& instream, CompressorStation& cs);
     friend std::ostream& operator << (std::ostream& outstream, const CompressorStation& cs);
