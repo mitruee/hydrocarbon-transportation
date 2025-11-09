@@ -44,10 +44,10 @@ void printMainMenu()
         << "Enter a command [0-5]: ";
 }
 
-void printObjectManagementMenu(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id)
+void printObjectManagementMenu(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int> ids)
 {
     std::cout << "=== OBJECT MANAGER ===" << std::endl;
-    for (int id = 1; id <= max_id; id++)
+    for (int id : ids)
     {
         if (pls.count(id))
         {
@@ -69,10 +69,22 @@ void printObjectManagementMenu(std::unordered_map<int, Pipeline>& pls, std::unor
 int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id)
 {
     std::vector<int> ids;
+    
+    for (int id = 0; id <= max_id; id++)
+    {
+        if (pls.count(id))
+        {
+            ids.push_back(id);
+        }
+        if (css.count(id))
+        {
+            ids.push_back(id);
+        }
+    }
 
-    printObjectManagementMenu(pls, css, max_id);
     while (true)
     {
+        printObjectManagementMenu(pls, css, ids);
         switch (getCorrectValue(0, 3))
         {
             case 0:
@@ -81,138 +93,158 @@ int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered
             }
             case 1:
             {
-                std::cout << "Choose object type." << std::endl
-                    << "0 - pipeline" << std::endl
-                    << "1 - compressor station" << std::endl
-                    << "Enter value: ";
-                bool object_type = getCorrectValue(0, 1);
-                search(pls, css, ids, object_type, max_id);
+                searchSomething(pls, css, ids);
+                break;
+            }
+            case 2:
+            {
+                break;
+            }
+            case 3:
+            {
                 break;
             }
         }
     }
 }
 
-void search(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int>& ids, bool object_type, int max_id)
+void searchSomething(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int>& ids)
 {
-    if (!object_type)
+    std::cout << "Choose an object you want to find" << std::endl
+        << "0 - pipeline" << std::endl
+        << "1 - compressor station" << std::endl
+        << "Enter value here: ";
+    switch (getCorrectValue(0, 1))
     {
-        if (ids.size() != 0)
+        case 0:
         {
             plsFilter(pls, ids);
+            break;
         }
-        else
+        case 1:
         {
-            for (int id = 1; id <= max_id; id++)
-            {
-                ids.push_back(id);
-            }
-
-            plsFilter(pls, ids);
-
+            cssFilter(css, ids);
+            break;
         }
     }
+}
 
+void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::vector<int>& ids)
+{
+    if (pls.size() + css.size() == ids.size())
+    {
+        std::cout << "Firstly search for something!" << std::endl;
+        return;
+    }
     else
     {
-        if (ids.size() != 0)
+        for (int id : ids)
         {
-            cssFilter(css, ids);
-        }
-        else
-        {
-            for (int id = 1; id <= max_id; id++)
+            if (pls.count(id))
             {
-                ids.push_back(id);
+                pls.erase(id);
             }
-
-            cssFilter(css, ids);
-
+            else
+            {
+                css.erase(id);
+            }
         }
     }
 }
 
 void plsFilter(std::unordered_map<int, Pipeline> pls, std::vector<int>& ids)
 {
-    std::cout << "Choose an attribute for searching." << std::endl
-        << "0 - name" << std::endl
-        << "1 - repairment status" << std::endl
-        << "Enter value: ";
-
+    std::cout << "Choose a filter attribute" << std::endl
+        << "0 - by name" << std::endl
+        << "1 - by repairment status" << std::endl
+        << "Enter value here: ";
     switch (getCorrectValue(0, 1))
     {
         case 0:
         {
+            std::cout << "Enter pipeline name: ";
             std::string name;
             INPUT_LINE(std::cin, name);
 
-            for (int id : ids)
+            for (int i = 0; i < ids.size(); i++)
             {
-                if (pls[id].checkByName(name))
+                if (pls.count(ids[i]) && pls[ids[i]].checkByName(name))
                 {
-                    ids.erase(ids.begin() + id);
+                    continue;
+                }
+                else
+                {
+                    ids.erase(ids.begin() + i);
                 }
             }
+            break;
         }
         case 1:
         {
+            std::cout << "Enter repairment status: ";
             bool rs = getCorrectValue(0, 1);
 
-            for (int id : ids)
+            for (int i = 0; i < ids.size(); i++)
             {
-                if (pls[id].checkByStatus(rs))
+                if (pls.count(ids[i]) && pls[ids[i]].checkByStatus(rs))
                 {
-                    ids.erase(ids.begin() + id);
+                    continue;
+                }
+                else
+                {
+                    ids.erase(ids.begin() + i);
                 }
             }
+            break;
         }
-    }
-
-    for (int id : ids)
-    {
-        std::cout << std::endl << "id=" << id << std::endl << pls[id];
     }
 }
 
 void cssFilter(std::unordered_map<int, CompressorStation> css, std::vector<int>& ids)
 {
-    std::cout << "Choose an attribute for searching." << std::endl
-        << "0 - name" << std::endl
-        << "1 - percentage of uninvolved workshops" << std::endl
-        << "Enter value: ";
-
+    std::cout << "Choose a filter attribute" << std::endl
+        << "0 - by name" << std::endl
+        << "1 - by uninvolved workshops percentage" << std::endl
+        << "Enter value here: ";
     switch (getCorrectValue(0, 1))
     {
-        case 0:
-        {
-            std::string name;
-            INPUT_LINE(std::cin, name);
-
-            for (int id : ids)
-            {
-                if (css[id].checkByName(name))
-                {
-                    ids.erase(ids.begin() + id);
-                }
-            }
-        }
-        case 1:
-        {
-            bool perc = getCorrectValue(0, 100);
-
-            for (int id : ids)
-            {
-                if (css[id].checkByPercentage(perc))
-                {
-                    ids.erase(ids.begin() + id);
-                }
-            }
-        }
-    }
-
-    for (int id : ids)
+    case 0:
     {
-        std::cout << std::endl << "id=" << id << std::endl << css[id];
+        std::cout << "Enter compressor station name: ";
+        std::string name;
+        INPUT_LINE(std::cin, name);
+
+        for (int i = 0; i < ids.size(); i++)
+        {
+            if (css.count(ids[i]) && css[ids[i]].checkByName(name))
+            {
+                continue;
+            }
+            else
+            {
+                ids.erase(ids.begin() + i);
+            }
+        }
+        break;
+    }
+    case 1:
+    {
+        std::cout << "Enter uninvolved workshops percentage: ";
+        int percentage = getCorrectValue(0, 100);
+
+        for (int i = 0; i < ids.size(); i++)
+        {
+            if (css.count(ids[i]) && css[ids[i]].checkByPercentage(percentage))
+            {
+                continue;
+            }
+            else
+            {
+                ids.erase(ids.begin() + i);
+            }
+        }
+        break;
+    }
     }
 }
 

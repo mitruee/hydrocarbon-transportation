@@ -57,9 +57,9 @@ int getID();
 void getMaxID(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int& max_id);
 
 void printMainMenu();
-void printObjectManagementMenu(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id);
+void printObjectManagementMenu(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int> ids);
 int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id);
-void search(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int>& ids, bool object_type, int max_id);
+void searchSomething(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int>& ids);
 void plsFilter(std::unordered_map<int, Pipeline> pls, std::vector<int>& ids);
 void cssFilter(std::unordered_map<int, CompressorStation> css, std::vector<int>& ids);
 
