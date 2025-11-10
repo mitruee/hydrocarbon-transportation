@@ -49,7 +49,7 @@ int main()
                 cin >> p;
                 pls.emplace(getID(), p);
 
-                cout << "Pipeline was created successfully";
+                cout << "Pipeline was created successfully" << std::endl;
 
                 break;
             }
@@ -63,7 +63,7 @@ int main()
                 cin >> cs;
                 css.emplace(getID(), cs);
 
-                cout << "Compressor station was created successfully";
+                cout << "Compressor station was created successfully" << std::endl;
 
                 break;
             }
@@ -94,8 +94,6 @@ int main()
 
                 loadFromFile(pls, css);
                 getMaxID(pls, css, max_id);
-
-                while (getID() < max_id) { }
 
                 break;
             }

@@ -13,7 +13,8 @@ public:
     CompressorStation();
     CompressorStation(std::string name, int workshops, int involved_workshops, char st_class);
 
-    void setIW(int new_iw);
+    void runIW();
+    void stopIW();
 
     const std::string &getName() const;
     const int getWorkshops() const;

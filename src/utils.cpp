@@ -60,8 +60,9 @@ void printObjectManagementMenu(std::unordered_map<int, Pipeline> pls, std::unord
     }
     std::cout << "======================" << std::endl
         << "1. Search" << std::endl
-        << "2. Delete" << std::endl
-        << "3. Edit" << std::endl
+        << "2. Delete searched" << std::endl
+        << "3. Edit searched" << std::endl
+        << "4. Back to all existing objects" << std::endl
         << "0. Back to main menu" << std::endl
         << "Enter a command [0-3]: ";
 }
@@ -85,7 +86,7 @@ int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered
     while (true)
     {
         printObjectManagementMenu(pls, css, ids);
-        switch (getCorrectValue(0, 3))
+        switch (getCorrectValue(0, 4))
         {
             case 0:
             {
@@ -94,14 +95,35 @@ int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered
             case 1:
             {
                 searchSomething(pls, css, ids);
+                
                 break;
             }
             case 2:
             {
+                deleteSomething(pls, css, ids);
+
                 break;
             }
             case 3:
             {
+                editSomething(pls, css, ids);
+
+                break;
+            }
+            case 4:
+            {
+                for (int id = 0; id <= max_id; id++)
+                {
+                    if (pls.count(id))
+                    {
+                        ids.push_back(id);
+                    }
+                    if (css.count(id))
+                    {
+                        ids.push_back(id);
+                    }
+                }
+
                 break;
             }
         }
@@ -110,12 +132,19 @@ int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered
 
 void searchSomething(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int>& ids)
 {
-    std::cout << "Choose an object you want to find" << std::endl
-        << "0 - pipeline" << std::endl
-        << "1 - compressor station" << std::endl
-        << "Enter value here: ";
-    switch (getCorrectValue(0, 1))
+    if (ids.size() == 0)
     {
+        std::cout << "Firstly create/add something!" << std::endl;
+        return;
+    }
+    else
+    {
+        std::cout << "Choose an object you want to find" << std::endl
+            << "0 - pipeline" << std::endl
+            << "1 - compressor station" << std::endl
+            << "Enter value here: ";
+        switch (getCorrectValue(0, 1))
+        {
         case 0:
         {
             plsFilter(pls, ids);
@@ -126,12 +155,13 @@ void searchSomething(std::unordered_map<int, Pipeline> pls, std::unordered_map<i
             cssFilter(css, ids);
             break;
         }
+        }
     }
 }
 
 void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::vector<int>& ids)
 {
-    if (pls.size() + css.size() == ids.size())
+    if (pls.size() + css.size() == ids.size() || ids.size() == 0)
     {
         std::cout << "Firstly search for something!" << std::endl;
         return;
@@ -147,6 +177,40 @@ void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<
             else
             {
                 css.erase(id);
+            }
+        }
+    }
+}
+
+void editSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::vector<int>& ids)
+{
+    if (pls.size() + css.size() == ids.size() || ids.size() == 0)
+    {
+        std::cout << "Firstly search for something!" << std::endl;
+        return;
+    }
+    else
+    {
+        if (pls.count(ids[0]))
+        {
+            std::cout << "Choose a new repairment status for this set of pipelines." << std::endl;
+            bool new_st = getCorrectValue(0, 1);
+            for (int id : ids)
+            {
+                pls[id].setStatus(new_st);
+            }
+        }
+        else
+        {
+            std::cout << "What do you want to do?" << std::endl
+                << "0 - stop one workshop in each compressor station" << std::endl
+                << "1 - run one workshop in each compressor station" << std::endl
+                << "Note: if number of involved workshops equals zero or number of workshops nothing will change" << std::endl;
+            bool mode = getCorrectValue(0, 1);
+            for (int id : ids)
+            {
+                if (mode) { css[id].runIW(); }
+                else { css[id].stopIW(); }
             }
         }
     }
@@ -175,6 +239,7 @@ void plsFilter(std::unordered_map<int, Pipeline> pls, std::vector<int>& ids)
                 else
                 {
                     ids.erase(ids.begin() + i);
+                    i -= 1;
                 }
             }
             break;
@@ -193,6 +258,7 @@ void plsFilter(std::unordered_map<int, Pipeline> pls, std::vector<int>& ids)
                 else
                 {
                     ids.erase(ids.begin() + i);
+                    i -= 1;
                 }
             }
             break;
@@ -223,6 +289,7 @@ void cssFilter(std::unordered_map<int, CompressorStation> css, std::vector<int>&
             else
             {
                 ids.erase(ids.begin() + i);
+                i -= 1;
             }
         }
         break;
@@ -241,6 +308,7 @@ void cssFilter(std::unordered_map<int, CompressorStation> css, std::vector<int>&
             else
             {
                 ids.erase(ids.begin() + i);
+                i -= 1;
             }
         }
         break;
@@ -306,13 +374,13 @@ void loadFromFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int
             {
                 Pipeline p;
                 p.loadPipeline(infile);
-                pls.emplace(id, p);
+                pls.emplace(getID(), p);
             }
             else
             {
                 CompressorStation cs;
                 cs.loadCS(infile);
-                css.emplace(id, cs);
+                css.emplace(getID(), cs);
             }
         }
 

@@ -4,7 +4,21 @@
 CompressorStation::CompressorStation() : name("blank"), workshops(0), involved_workshops(0), st_class(65) {}
 CompressorStation::CompressorStation(std::string name, int workshops, int involved_workshops, char st_class) : name(name), workshops(workshops), involved_workshops(involved_workshops), st_class(st_class) {}
 
-void CompressorStation::setIW(int new_iw) { involved_workshops = new_iw; }
+void CompressorStation::runIW()
+{
+    if (involved_workshops < workshops)
+    {
+        involved_workshops++;
+    }
+}
+
+void CompressorStation::stopIW()
+{
+    if (involved_workshops > 0)
+    {
+        involved_workshops--;
+    }
+}
 
 const std::string &CompressorStation::getName() const { return name; }
 const int CompressorStation::getWorkshops() const { return workshops; }
@@ -43,7 +57,7 @@ bool CompressorStation::checkByName(std::string check_name)
 
 bool CompressorStation::checkByPercentage(int check_per)
 {
-    int per = (1 - (involved_workshops / workshops)) * 100;
+    int per = 100 - (involved_workshops * 100) / workshops;
     if (per == check_per)
     {
         return 1;
