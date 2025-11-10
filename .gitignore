@@ -428,6 +428,7 @@ FodyWeavers.xsd
 *.msp
 
 # Some other extensions
+shulman_main.exe
 *.exe
 *.txt
 log*
