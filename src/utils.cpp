@@ -13,6 +13,49 @@ int getID()
     return ++id;
 }
 
+void pipelineCreation(std::unordered_map<int, Pipeline>& pls)
+{
+    move_terminal();
+
+            Pipeline p;
+
+            std::cin >> p;
+            pls.emplace(getID(), p);
+
+            std::cout << "Pipeline was created successfully" << std::endl;
+}
+
+void csCreation(std::unordered_map<int, CompressorStation>& css, std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, std::unordered_map<int, int>>& network, int& max_id)
+{
+    move_terminal();
+
+    CompressorStation cs;
+
+    std::cin >> cs;
+    css.emplace(getID(), cs);
+    getMaxID(pls, css, max_id);
+
+    std::cout << "Compressor station was created successfully" << std::endl;
+
+    update_network(network, css, max_id);
+}
+
+void update_network(std::unordered_map<int, std::unordered_map<int, int>>& network, std::unordered_map<int, CompressorStation> css, int max_id)
+{
+    if (network.find(max_id) == network.end()) {
+        network[max_id] = std::unordered_map<int, int>();
+        network[max_id].emplace(max_id, 0);
+    }
+    
+    for (int id = 1; id < max_id; id++) {
+        if (css.count(id)) {
+            network[id].emplace(max_id, 0);
+            network[max_id].emplace(id, 0);
+        }
+    }
+
+}
+
 void getMaxID(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int& max_id)
 {
     for (const auto& pair : pls)
@@ -37,11 +80,13 @@ void printMainMenu()
         << "1. Create new pipeline" << std::endl
         << "2. Create new compressor station" << std::endl
         << "3. Object management" << std::endl
-        << "4. Save in file" << std::endl
-        << "5. Load from file" << std::endl
+        << "4. Gas transportation network" << std::endl
+        << "5. Topological sort" << std::endl
+        << "6. Save in file" << std::endl
+        << "7. Load from file" << std::endl
         << "0. Exit" << std::endl
         << "=================================" << std::endl
-        << "Enter a command [0-5]: ";
+        << "Enter a command [0-7]: ";
 }
 
 void printObjectManagementMenu(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int> ids)
@@ -63,11 +108,12 @@ void printObjectManagementMenu(std::unordered_map<int, Pipeline> pls, std::unord
         << "2. Delete searched" << std::endl
         << "3. Edit searched" << std::endl
         << "4. Back to all existing objects" << std::endl
+        << "5. Connect in gas transportation network" << std::endl
         << "0. Back to main menu" << std::endl
-        << "Enter a command [0-3]: ";
+        << "Enter a command [0-5]: ";
 }
 
-int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id)
+int objectManagementLogic(std::unordered_map<int, std::unordered_map<int, int>>& network, std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id)
 {
     std::vector<int> ids;
     
@@ -85,8 +131,9 @@ int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered
 
     while (true)
     {
+        move_terminal();
         printObjectManagementMenu(pls, css, ids);
-        switch (getCorrectValue(0, 4))
+        switch (getCorrectValue(0, 5))
         {
             case 0:
             {
@@ -106,7 +153,7 @@ int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered
             }
             case 3:
             {
-                editSomething(pls, css, ids);
+                editSomething(pls, css, ids, max_id);
 
                 break;
             }
@@ -125,6 +172,10 @@ int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered
                 }
 
                 break;
+            }
+            case 5:
+            {
+                connectGTN(network, pls, css, max_id);
             }
         }
     }
@@ -182,36 +233,181 @@ void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<
     }
 }
 
-void editSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::vector<int>& ids)
+void editSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::vector<int>& ids, int max_id)
 {
     if (pls.size() + css.size() == ids.size() || ids.size() == 0)
     {
         std::cout << "Firstly search for something!" << std::endl;
         return;
     }
+    std::cout << "Continue searching or choose IDs?" << std::endl
+    << "0 - continue searching" << std::endl
+    << "1 - choose IDs" << std::endl;
+    switch(getCorrectValue(0, 1))
+    {
+        case 0:
+        {
+            if (pls.count(ids[0]))
+            {
+                std::cout << "Choose a new repairment status for this set of pipelines." << std::endl;
+                bool new_st = getCorrectValue(0, 1);
+                for (int id : ids)
+                {
+                    pls[id].setStatus(new_st);
+                }
+            }
+            else
+            {
+                std::cout << "What do you want to do?" << std::endl
+                    << "0 - stop one workshop in each compressor station" << std::endl
+                    << "1 - run one workshop in each compressor station" << std::endl
+                    << "Note: if number of involved workshops equals zero or number of workshops nothing will change" << std::endl;
+                bool mode = getCorrectValue(0, 1);
+                for (int id : ids)
+                {
+                    if (mode) { css[id].runIW(); }
+                    else { css[id].stopIW(); }
+                }
+            }
+        }
+        case 1:
+        {
+            bool flag;
+            bool new_rs;
+            bool mode;
+
+            if (pls.count(ids[0]))
+            {
+                std::cout << "Enter new repairment status: ";
+                new_rs = getCorrectValue(0,1);
+                flag = 0;
+            }
+            else
+            {
+                std::cout << "What do you want to do?" << std::endl
+                    << "0 - stop one workshop in each compressor station" << std::endl
+                    << "1 - run one workshop in each compressor station" << std::endl
+                    << "Note: if number of involved workshops equals zero or number of workshops nothing will change" << std::endl;
+
+                mode = getCorrectValue(0, 1);
+                flag = 1;
+            }
+            
+            std::cout << "Enter IDs (enter 0 if you want to break)" << std::endl;
+
+            while(true)
+            {
+                int temp = getCorrectValue(0, max_id);
+
+                auto id_checker = std::find(ids.begin(), ids.end(), temp);
+
+                if (temp == 0)
+                {
+                    break;
+                }
+                else if (id_checker == ids.end())
+                {
+                    std::cout << "Not in searched IDs, try another" << std::endl;
+                }
+                else
+                {
+                    if (!flag)
+                    {
+                        pls[temp].setStatus(new_rs);
+                    }
+                    else
+                    {
+                        if (!mode) { css[temp].stopIW(); }
+                        else { css[temp].runIW(); }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void connectGTN(std::unordered_map<int, std::unordered_map<int, int>>& network, std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation> css, int max_id)
+{
+    static std::set<int> used_pipelines;
+
+    if (pls.size() + css.size() == 0)
+    {
+        std::cout << "Firstly create/add something!" << std::endl;
+        return;
+    }
     else
     {
-        if (pls.count(ids[0]))
+        int id_s = 0;
+        int id_e = 0;
+
+        while(true)
         {
-            std::cout << "Choose a new repairment status for this set of pipelines." << std::endl;
-            bool new_st = getCorrectValue(0, 1);
-            for (int id : ids)
+            while (true)
             {
-                pls[id].setStatus(new_st);
+                std::cout << "Choose ID of starting CS: ";
+                id_s = getCorrectValue(1, max_id);
+                if (css.count(id_s))
+                {
+                    break;
+                }
+                else
+                {
+                    std::cout << "There is no CS with such ID. Try again!" << std::endl;
+                }
             }
+            while (true)
+            {
+                std::cout << "Choose ID of ending CS: ";
+                id_e = getCorrectValue(1, max_id);
+                if (css.count(id_e))
+                {
+                    break;
+                }
+                else
+                {
+                    std::cout << "There is no CS with such ID. Try again!" << std::endl;
+                }
+            }
+            if (id_s == id_e)
+            {
+                std::cout << id_s << " " << id_e << std::endl;
+                std::cout << "Starting and ending CS are match. Try again" << std::endl;
+                continue;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        std::cout << "Choose pipeline diameter: ";
+        int diameter = getCorrectValue(1, 1400);
+        bool flag = 0;
+        int id_p = 0;
+
+        for (int id = 1; id <= max_id; id++)
+        {
+            if (pls.count(id) && !used_pipelines.count(id))
+            {
+                if (pls[id].getDiameter() == diameter)
+                {
+                    id_p = id;
+                    used_pipelines.insert(id);
+                    flag = 1;
+                    break;
+                }
+            }
+        }
+
+        if (flag)
+        {
+            network[id_s][id_e] = id_p;
         }
         else
         {
-            std::cout << "What do you want to do?" << std::endl
-                << "0 - stop one workshop in each compressor station" << std::endl
-                << "1 - run one workshop in each compressor station" << std::endl
-                << "Note: if number of involved workshops equals zero or number of workshops nothing will change" << std::endl;
-            bool mode = getCorrectValue(0, 1);
-            for (int id : ids)
-            {
-                if (mode) { css[id].runIW(); }
-                else { css[id].stopIW(); }
-            }
+            pipelineCreation(pls);
+            getMaxID(pls, css, max_id);
+            network[id_s][id_e] = max_id;
         }
     }
 }
@@ -354,12 +550,14 @@ void saveInFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, 
     }
 }
 
-void loadFromFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css)
+void loadFromFile(std::unordered_map<int, std::unordered_map<int, int>>& network, std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int& max_id)
 {
     std::string filepath;
 
     std::cout << "Enter a filepath: ";
     INPUT_LINE(std::cin, filepath);
+
+    getMaxID(pls, css, max_id);
 
     std::ifstream infile(filepath);
     std::string type;
@@ -375,12 +573,15 @@ void loadFromFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int
                 Pipeline p;
                 p.loadPipeline(infile);
                 pls.emplace(getID(), p);
+                max_id++;
             }
             else
             {
                 CompressorStation cs;
                 cs.loadCS(infile);
                 css.emplace(getID(), cs);
+                max_id++;
+                update_network(network, css, max_id);
             }
         }
 
