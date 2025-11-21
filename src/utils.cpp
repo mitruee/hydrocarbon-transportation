@@ -147,7 +147,7 @@ int objectManagementLogic(std::unordered_map<int, std::unordered_map<int, int>>&
             }
             case 2:
             {
-                deleteSomething(pls, css, ids);
+                deleteSomething(pls, css, network, ids);
 
                 break;
             }
@@ -210,7 +210,7 @@ void searchSomething(std::unordered_map<int, Pipeline> pls, std::unordered_map<i
     }
 }
 
-void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::vector<int>& ids)
+void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::unordered_map<int, std::unordered_map<int, int>>& network, std::vector<int>& ids)
 {
     if (pls.size() + css.size() == ids.size() || ids.size() == 0)
     {
@@ -224,10 +224,31 @@ void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<
             if (pls.count(id))
             {
                 pls.erase(id);
+                for (int id1 : ids)
+                {
+                    if (css.count(id1))
+                    {
+                        for (int id2 : ids)
+                        {
+                            if (css.count(id2))
+                            {
+                                if (network[id1][id2] == id)
+                                {
+                                    network[id1][id2] = 0;
+                                }
+                            }
+                        }
+                    }
+                }
             }
             else
             {
                 css.erase(id);
+                network.erase(id);
+                for (int id1 : ids)
+                {
+                    network[id1].erase(id);
+                }
             }
         }
     }
@@ -512,7 +533,7 @@ void cssFilter(std::unordered_map<int, CompressorStation> css, std::vector<int>&
     }
 }
 
-void saveInFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id)
+void saveInFile(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::unordered_map<int, std::unordered_map<int, int>> network, int max_id)
 {
     std::string filepath;
 
@@ -543,6 +564,24 @@ void saveInFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, 
         {
             std::cout << "There is no objects to save." << std::endl;
         }
+
+        int size = network.size();
+        outfile << std::endl << size << std::endl;
+        for (int id1 = 1; id1 <= max_id; id1++)
+        {
+            if (network.count(id1))
+            {   
+                outfile << id1 << std::endl;
+                for (int id2 = 1; id2 <= max_id; id2++)
+                {
+                    if (network[id1].count(id2))
+                    {
+                        outfile << id2 << std::endl;
+                        outfile << network[id1][id2] << std::endl;
+                    }
+                }
+            }
+        }
     }
     else
     {
@@ -561,6 +600,7 @@ void loadFromFile(std::unordered_map<int, std::unordered_map<int, int>>& network
 
     std::ifstream infile(filepath);
     std::string type;
+    std::string str;
     int id = 0;
 
     if (infile.is_open())
@@ -585,6 +625,26 @@ void loadFromFile(std::unordered_map<int, std::unordered_map<int, int>>& network
             }
         }
 
+        infile >> str;
+        if (str == "/")
+        {
+            int size;
+            infile >> size;
+            int cur_id1;
+            int cur_id2;
+            int cur_p;
+            while (std::getline(infile, str))
+            {
+                cur_id1 = std::stoi(str);
+                for (int id = 1; id <= max_id; id++)
+                {
+                    infile >> cur_id2;
+                    infile >> cur_p;
+                    network[cur_id1][cur_id2] = cur_p;
+                }
+            }
+        }
+        
         if (id != 0)
         {
             std::cout << "File was read succesfully!" << std::endl;
@@ -594,7 +654,6 @@ void loadFromFile(std::unordered_map<int, std::unordered_map<int, int>>& network
         {
             std::cout << "There is no objects with correct format in specified file!" << std::endl;
         }
-
     }
     else
     {

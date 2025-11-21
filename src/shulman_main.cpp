@@ -141,7 +141,7 @@ int main()
                 move_terminal();
 
                 getMaxID(pls, css, max_id);
-                saveInFile(pls, css, max_id);
+                saveInFile(pls, css, network, max_id);
 
                 break;
             }

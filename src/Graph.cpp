@@ -12,41 +12,61 @@ void Graph::addEdge(int v, int w)
     adj[v].push_back(w);
 }
 
-void Graph::topologicalSortUtil(int v, bool visited[],
+bool Graph::topologicalSortUtil(int v, bool visited[], bool* recStack,
                                 stack<int>& Stack)
 {
-    visited[v] = true;
+    if (!visited[v]) {
+        visited[v] = true;
+        recStack[v] = true;
 
-    list<int>::iterator i;
-    for (i = adj[v].begin(); i != adj[v].end(); ++i)
-        if (!visited[*i])
-            topologicalSortUtil(*i, visited, Stack);
-
+        list<int>::iterator i;
+        for (i = adj[v].begin(); i != adj[v].end(); ++i) {
+            if (!visited[*i] && topologicalSortUtil(*i, visited, recStack, Stack)) {
+                return true;
+            } else if (recStack[*i]) {
+                return true;
+            }
+        }
+    }
+    
+    recStack[v] = false;
     Stack.push(v);
+    return false;
 }
 
 void Graph::topologicalSort(std::set<int> used_vertices, map<int, int> index_to_id)
 {
     stack<int> Stack;
-    bool* visited = new bool[used_vertices.size()];
-    for (int i = 0; i < used_vertices.size(); i++)
+    int size = used_vertices.size();
+    bool* visited = new bool[size];
+    bool* recStack = new bool[size];
+    
+    for (int i = 0; i < size; i++) {
         visited[i] = false;
-
-    for (int i = 0; i < used_vertices.size(); i++)
-        if (visited[i] == false)
-        {
-            topologicalSortUtil(i, visited, Stack);
-        }
-        else
-        {
-            std::cout << "There is a cycle in current graph!" << std::endl;
-            return;
-        }
-    while (Stack.empty() == false) {
-        cout << index_to_id[Stack.top()] << " ";
-        Stack.pop();
+        recStack[i] = false;
     }
-    cout << endl;
+
+    bool hasCycle = false;
+    
+    for (int i = 0; i < size; i++) {
+        if (!visited[i]) {
+            if (topologicalSortUtil(i, visited, recStack, Stack)) {
+                hasCycle = true;
+                break;
+            }
+        }
+    }
+
+    if (hasCycle) {
+        std::cout << "There is a cycle in current graph!" << std::endl;
+    } else {
+        while (Stack.empty() == false) {
+            cout << index_to_id[Stack.top()] << " ";
+            Stack.pop();
+        }
+        cout << endl;
+    }
     
     delete[] visited;
+    delete[] recStack;
 }
