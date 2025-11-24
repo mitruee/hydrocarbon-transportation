@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "Pipeline.h"
 #include "CompressorStation.h"
+#include "Graph.h"
 
 using namespace std;
 using namespace chrono;
@@ -27,13 +28,14 @@ int main()
 
     unordered_map<int, Pipeline> pls;
     unordered_map<int, CompressorStation> css;
+    
     int max_id = 0;
 
     while(1)
     {
         printMainMenu();
 
-        switch(getCorrectValue(0, 5))
+        switch(getCorrectValue(0, 6))
         {
             case 0:
             {
@@ -42,29 +44,13 @@ int main()
             
             case 1:
             {
-                move_terminal();
-
-                Pipeline p;
-
-                cin >> p;
-                pls.emplace(getID(), p);
-
-                cout << "Pipeline was created successfully" << std::endl;
-
+                pipelineCreation(pls);
                 break;
             }
 
             case 2:
             {
-                move_terminal();
-
-                CompressorStation cs;
-
-                cin >> cs;
-                css.emplace(getID(), cs);
-
-                cout << "Compressor station was created successfully" << std::endl;
-
+                csCreation(css);
                 break;
             }
 
@@ -83,8 +69,23 @@ int main()
                 move_terminal();
 
                 getMaxID(pls, css, max_id);
-                saveInFile(pls, css, max_id);
 
+                cout << "Gas transportation network:" << endl;
+
+                for (int id = 1; id <= max_id; id++)
+                {
+                    if (pls.count(id))
+                    {
+                        if ((pls[id].getStartID() != 0) && (pls[id].getEndID() != 0) && (pls[id].getStatus() != 1))
+                        {
+                            cout << pls[id].getStartID() << " -> " << pls[id].getEndID() << endl;
+                        }
+                    }
+                }
+
+                cout << endl;
+
+                topologicalSortGTN(pls, css, max_id);
                 break;
             }
 
@@ -92,7 +93,17 @@ int main()
             {
                 move_terminal();
 
-                loadFromFile(pls, css);
+                getMaxID(pls, css, max_id);
+                saveInFile(pls, css, max_id);
+
+                break;
+            }
+
+            case 6:
+            {
+                move_terminal();
+
+                loadFromFile(pls, css, max_id);
                 getMaxID(pls, css, max_id);
 
                 break;

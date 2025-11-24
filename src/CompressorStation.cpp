@@ -1,7 +1,7 @@
 #include "CompressorStation.h"
 #include "utils.h"
 
-CompressorStation::CompressorStation() : name("blank"), workshops(0), involved_workshops(0), st_class(65) {}
+CompressorStation::CompressorStation() : name("blank"), workshops(0), involved_workshops(0), st_class('A') {}
 CompressorStation::CompressorStation(std::string name, int workshops, int involved_workshops, char st_class) : name(name), workshops(workshops), involved_workshops(involved_workshops), st_class(st_class) {}
 
 void CompressorStation::runIW()
@@ -29,7 +29,11 @@ void CompressorStation::saveCS(std::ofstream& outfstream)
 {
     if (outfstream.is_open())
     {
-        outfstream << ";cs;" << name << ";" << workshops << ";" << involved_workshops << ";" << st_class << std::endl;
+        outfstream << "cs" << std::endl
+            << name << std::endl
+            << workshops << std::endl
+            << involved_workshops << std::endl
+            << st_class << std::endl;
     }
 }
 
