@@ -29,7 +29,11 @@ void CompressorStation::saveCS(std::ofstream& outfstream)
 {
     if (outfstream.is_open())
     {
-        outfstream << ";cs;" << name << ";" << workshops << ";" << involved_workshops << ";" << st_class << std::endl;
+        outfstream << "cs" << std::endl
+            << name << std::endl
+            << workshops << std::endl
+            << involved_workshops << std::endl
+            << st_class << std::endl;
     }
 }
 

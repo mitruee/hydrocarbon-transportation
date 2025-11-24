@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "Pipeline.h"
 #include "CompressorStation.h"
+#include "Graph.h"
 
 void move_terminal()
 {
@@ -15,14 +16,14 @@ int getID()
 
 void getMaxID(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int& max_id)
 {
-    for (const auto& pair : pls)
+    for (const auto pair : pls)
     {
         if (max_id < pair.first)
         {
             max_id = pair.first;
         }
     }
-    for (const auto& pair : css)
+    for (const auto pair : css)
     {
         if (max_id < pair.first)
         {
@@ -31,17 +32,40 @@ void getMaxID(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, Com
     }
 }
 
+void pipelineCreation(std::unordered_map<int, Pipeline>& pls)
+{
+    move_terminal();
+
+    Pipeline p;
+
+    std::cin >> p;
+    pls.emplace(getID(), p);
+
+    std::cout << "Pipeline was created successfully" << std::endl;
+}
+
+void csCreation(std::unordered_map<int, CompressorStation>& css)
+{
+    move_terminal();
+
+    CompressorStation cs;
+
+    std::cin >> cs;
+    css.emplace(getID(), cs);
+}
+
 void printMainMenu()
 {
     std::cout << "=== HYDROCARBON TRANSPORTATION ===" << std::endl
         << "1. Create new pipeline" << std::endl
         << "2. Create new compressor station" << std::endl
         << "3. Object management" << std::endl
-        << "4. Save in file" << std::endl
-        << "5. Load from file" << std::endl
+        << "4. Topological sort" << std::endl
+        << "5. Save in file" << std::endl
+        << "6. Load from file" << std::endl
         << "0. Exit" << std::endl
         << "=================================" << std::endl
-        << "Enter a command [0-5]: ";
+        << "Enter a command [0-6]: ";
 }
 
 void printObjectManagementMenu(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int> ids)
@@ -63,8 +87,9 @@ void printObjectManagementMenu(std::unordered_map<int, Pipeline> pls, std::unord
         << "2. Delete searched" << std::endl
         << "3. Edit searched" << std::endl
         << "4. Back to all existing objects" << std::endl
+        << "5. Connect in gas transportation network" << std::endl
         << "0. Back to main menu" << std::endl
-        << "Enter a command [0-3]: ";
+        << "Enter a command [0-5]: ";
 }
 
 int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id)
@@ -86,7 +111,7 @@ int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered
     while (true)
     {
         printObjectManagementMenu(pls, css, ids);
-        switch (getCorrectValue(0, 4))
+        switch (getCorrectValue(0, 5))
         {
             case 0:
             {
@@ -100,7 +125,8 @@ int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered
             }
             case 2:
             {
-                deleteSomething(pls, css, ids);
+                getMaxID(pls, css, max_id);
+                deleteSomething(pls, css, ids, max_id);
 
                 break;
             }
@@ -125,6 +151,12 @@ int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered
                 }
 
                 break;
+            }
+            case 5:
+            {
+                getMaxID(pls, css, max_id);
+                addConnection(pls, css, max_id);
+                return 0;
             }
         }
     }
@@ -159,7 +191,7 @@ void searchSomething(std::unordered_map<int, Pipeline> pls, std::unordered_map<i
     }
 }
 
-void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::vector<int>& ids)
+void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::vector<int>& ids, int max_id)
 {
     if (pls.size() + css.size() == ids.size() || ids.size() == 0)
     {
@@ -175,8 +207,19 @@ void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<
                 pls.erase(id);
             }
             else
-            {
+            {   
                 css.erase(id);
+                for (int id_p = 1; id_p <= max_id; id_p++)
+                {
+                    if (pls.count(id_p))
+                    {
+                        if ((pls[id_p].getStartID() == id) || (pls[id_p].getEndID() == id))
+                        {
+                            pls[id_p].setStartID(0);
+                            pls[id_p].setEndID(0);
+                        }
+                    }
+                }
             }
         }
     }
@@ -314,6 +357,120 @@ void cssFilter(std::unordered_map<int, CompressorStation> css, std::vector<int>&
         break;
     }
     }
+}
+
+void addConnection(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation> css, int max_id)
+{
+    int start_id = 0;
+    int end_id = 0; 
+
+    while(1)
+    {
+        while(1)
+        {
+            std::cout << "Enter a start CS ID: ";
+            start_id = getCorrectValue(1, max_id);
+            if (css.count(start_id))
+            {
+                break;
+            }
+            else
+            {
+                std::cout << "Invalid CS ID. Try again!" << std::endl;
+            }
+        }
+        while(1)
+        {
+            std::cout << "Enter an end CS ID: ";
+            end_id = getCorrectValue(1, max_id);
+            if (css.count(end_id))
+            {
+                break;
+            }
+            else
+            {
+                std::cout << "Invalid CS ID. Try again!" << std::endl;
+            }
+        }
+        if (start_id == end_id)
+        {
+            std::cout << "Start and end IDs shouldn't be same. Try again!" << std::endl;
+            continue;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    int diameter;
+    std::cout << "Choose pipeline diameter: ";
+    diameter = getCorrectValue(1, 1400);
+
+    for (int id = 1; id <= max_id; id++)
+    {
+        if (pls.count(id))
+        {
+            if ((pls[id].getDiameter() == diameter) && (pls[id].getStatus() != 1))
+            {
+                pls[id].setStartID(start_id);
+                pls[id].setEndID(end_id);
+                std::cout << "Connection has been added successfully! Pipeline " << id << " beetween stations " << start_id 
+                << " and " << end_id << std::endl;
+                return;
+            }
+        }
+    }
+
+    pipelineCreation(pls);
+    getMaxID(pls, css, max_id);
+    pls[max_id].setStartID(start_id);
+    pls[max_id].setEndID(end_id);
+
+    std::cout << "Connection has been added successfully! Pipeline " << max_id << " beetween stations " << start_id 
+    << " and " << end_id << std::endl;
+
+}
+
+void topologicalSortGTN(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int max_id)
+{
+    std::vector<std::vector<int>> edges;
+    std::set<int> used_vertices;
+    getMaxID(pls, css, max_id);
+
+    for (int id = 1; id <= max_id; id++)
+    {
+        if (pls.count(id))
+        {
+            if ((pls[id].getStartID()) != 0 && (pls[id].getEndID() != 0) && (pls[id].getStatus() != 1))
+            {
+                std::vector<int> edge = {pls[id].getStartID(), pls[id].getEndID()};
+                edges.push_back(edge);
+                used_vertices.insert(pls[id].getStartID());
+                used_vertices.insert(pls[id].getEndID());
+            }
+        }
+    }
+
+    std::map<int, int> id_to_index;
+    std::map<int, int> index_to_id;
+    int index = 0;
+    for (int vertex : used_vertices) {
+        id_to_index[vertex] = index;
+        index_to_id[index] = vertex;
+        index++;
+    }
+
+    Graph g(used_vertices.size());
+    
+    for (const std::vector<int>& edge : edges)
+    {
+        g.addEdge(id_to_index[edge[0]], id_to_index[edge[1]]);
+    }
+
+    std::cout << "Following is a Topological Sort of the given graph: ";
+
+    g.topologicalSort(used_vertices, index_to_id);
 }
 
 void saveInFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id)

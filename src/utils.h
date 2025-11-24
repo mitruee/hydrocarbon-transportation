@@ -8,6 +8,8 @@
 #include <vector>
 #include <iomanip>
 #include <sstream>
+#include <set>
+#include <list>
 
 
 class Pipeline;
@@ -56,14 +58,20 @@ void move_terminal();
 int getID();
 void getMaxID(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int& max_id);
 
+void pipelineCreation(std::unordered_map<int, Pipeline>& pls);
+void csCreation(std::unordered_map<int, CompressorStation>& css);
+
 void printMainMenu();
 void printObjectManagementMenu(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int> ids);
 int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id);
 void searchSomething(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int>& ids);
-void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::vector<int>& ids);
+void deleteSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::vector<int>& ids, int max_id);
 void editSomething(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, std::vector<int>& ids);
 void plsFilter(std::unordered_map<int, Pipeline> pls, std::vector<int>& ids);
 void cssFilter(std::unordered_map<int, CompressorStation> css, std::vector<int>& ids);
+void addConnection(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation> css, int max_id);
+
+void topologicalSortGTN(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int max_id);
 
 void saveInFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id);
 void loadFromFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css);
