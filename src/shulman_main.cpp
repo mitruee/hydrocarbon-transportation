@@ -28,7 +28,6 @@ int main()
 
     unordered_map<int, Pipeline> pls;
     unordered_map<int, CompressorStation> css;
-    unordered_map<int, unordered_map<int, int>> network;
     
     int max_id = 0;
 
@@ -60,7 +59,7 @@ int main()
                 move_terminal();
 
                 getMaxID(pls, css, max_id);
-                objectManagementLogic(network, pls, css, max_id);
+                objectManagementLogic(pls, css, max_id);
 
                 break;
             }
@@ -104,7 +103,7 @@ int main()
             {
                 move_terminal();
 
-                loadFromFile(pls, css);
+                loadFromFile(pls, css, max_id);
                 getMaxID(pls, css, max_id);
 
                 break;

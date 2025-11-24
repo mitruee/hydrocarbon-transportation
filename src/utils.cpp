@@ -135,7 +135,7 @@ void printObjectManagementMenu(std::unordered_map<int, Pipeline> pls, std::unord
         << "Enter a command [0-5]: ";
 }
 
-int objectManagementLogic(std::unordered_map<int, std::unordered_map<int, int>>& network, std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id)
+int objectManagementLogic(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id)
 {
     std::vector<int> ids;
     
@@ -576,7 +576,7 @@ void topologicalSortGTN(std::unordered_map<int, Pipeline> pls, std::unordered_ma
     g.topologicalSort(used_vertices, index_to_id);
 }
 
-void saveInFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int max_id)
+void saveInFile(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int max_id)
 {
     std::string filepath;
 
@@ -614,7 +614,7 @@ void saveInFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, 
     }
 }
 
-void loadFromFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css)
+void loadFromFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int& max_id)
 {
     std::string filepath;
 
