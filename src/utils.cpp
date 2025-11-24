@@ -14,48 +14,6 @@ int getID()
     return ++id;
 }
 
-void pipelineCreation(std::unordered_map<int, Pipeline>& pls)
-{
-    move_terminal();
-
-            Pipeline p;
-
-            std::cin >> p;
-            pls.emplace(getID(), p);
-
-            std::cout << "Pipeline was created successfully" << std::endl;
-}
-
-void csCreation(std::unordered_map<int, CompressorStation>& css, std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, std::unordered_map<int, int>>& network, int& max_id)
-{
-    move_terminal();
-
-    CompressorStation cs;
-
-    std::cin >> cs;
-    css.emplace(getID(), cs);
-    getMaxID(pls, css, max_id);
-
-    std::cout << "Compressor station was created successfully" << std::endl;
-
-    update_network(network, css, max_id);
-}
-
-void update_network(std::unordered_map<int, std::unordered_map<int, int>>& network, std::unordered_map<int, CompressorStation> css, int max_id)
-{
-    if (network.find(max_id) == network.end()) {
-        network[max_id] = std::unordered_map<int, int>();
-        network[max_id].emplace(max_id, 0);
-    }
-    
-    for (int id = 1; id < max_id; id++) {
-        if (css.count(id)) {
-            network[id].emplace(max_id, 0);
-            network[max_id].emplace(id, 0);
-        }
-    }
-
-}
 
 void getMaxID(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int& max_id)
 {
@@ -514,7 +472,7 @@ void addConnection(std::unordered_map<int, Pipeline>& pls, std::unordered_map<in
     {
         if (pls.count(id))
         {
-            if ((pls[id].getDiameter() == diameter) && (pls[id].getStatus() != 1))
+            if ((pls[id].getDiameter() == diameter) && (pls[id].getStatus() != 1) && (pls[id].getStartID() == 0))
             {
                 pls[id].setStartID(start_id);
                 pls[id].setEndID(end_id);

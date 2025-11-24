@@ -55,7 +55,6 @@ T getCorrectValue(T min, T max)
 }
 
 void move_terminal();
-void update_network(std::unordered_map<int, std::unordered_map<int, int>>& network, std::unordered_map<int, CompressorStation> css, int max_id);
 int getID();
 void getMaxID(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int& max_id);
 
