@@ -10,6 +10,7 @@
 #include <sstream>
 #include <set>
 #include <list>
+#include <queue>
 
 
 class Pipeline;
@@ -73,6 +74,7 @@ void cssFilter(std::unordered_map<int, CompressorStation> css, std::vector<int>&
 void addConnection(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation> css, int max_id);
 
 void topologicalSortGTN(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int max_id);
+void dijkstraGTN(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int max_id);
 
 void saveInFile(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int max_id);
 void loadFromFile(std::unordered_map<int, Pipeline>& pls, std::unordered_map<int, CompressorStation>& css, int& max_id);

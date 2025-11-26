@@ -10,6 +10,13 @@ Graph::Graph(int V)
 void Graph::addEdge(int v, int w)
 {
     adj[v].push_back(w);
+    edge_weights[{v, w}] = 1;
+}
+
+void Graph::addEdge(int v, int w, float weight)
+{
+    adj[v].push_back(w);
+    edge_weights[{v, w}] = weight;
 }
 
 bool Graph::topologicalSortUtil(int v, bool visited[], bool* recStack,
@@ -69,4 +76,57 @@ void Graph::topologicalSort(std::set<int> used_vertices, std::map<int, int> inde
     
     delete[] visited;
     delete[] recStack;
+}
+
+std::vector<int> Graph::dijkstra(int start, int target, std::map<int, int> index_to_id)
+{
+    if (start < 0 || start >= V || target < 0 || target >= V) {
+        return {};
+    }
+
+    std::vector<int> dist(V, std::numeric_limits<int>::max());
+    std::vector<int> prev(V, -1);
+    std::vector<bool> visited(V, false);
+
+    using Pair = std::pair<int, int>;
+    std::priority_queue<Pair, std::vector<Pair>, std::greater<Pair>> pq;
+
+    dist[start] = 0;
+    pq.push({0, start});
+
+    while (!pq.empty()) {
+        int u = pq.top().second;
+        pq.pop();
+
+        if (u == target) {
+            break;
+        }
+
+        if (visited[u]) {
+            continue;
+        }
+        visited[u] = true;
+
+        for (int v : adj[u]) {
+            int weight = edge_weights[{u, v}];
+
+            if (!visited[v] && dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+                prev[v] = u;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+
+    std::vector<int> path;
+    if (dist[target] == std::numeric_limits<int>::max()) {
+        return path;
+    }
+
+    for (int at = target; at != -1; at = prev[at]) {
+        path.push_back(at);
+    }
+    std::reverse(path.begin(), path.end());
+
+    return path;
 }

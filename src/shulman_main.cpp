@@ -35,7 +35,7 @@ int main()
     {
         printMainMenu();
 
-        switch(getCorrectValue(0, 6))
+        switch(getCorrectValue(0, 7))
         {
             case 0:
             {
@@ -94,12 +94,38 @@ int main()
                 move_terminal();
 
                 getMaxID(pls, css, max_id);
-                saveInFile(pls, css, max_id);
+
+                cout << "Gas transportation network:" << endl;
+
+                for (int id = 1; id <= max_id; id++)
+                {
+                    if (pls.count(id))
+                    {
+                        if ((pls[id].getStartID() != 0) && (pls[id].getEndID() != 0) && (pls[id].getStatus() != 1))
+                        {
+                            cout << pls[id].getStartID() << " -> " << pls[id].getEndID() << endl;
+                        }
+                    }
+                }
+
+                cout << endl;
+
+                dijkstraGTN(pls, css, max_id);
 
                 break;
             }
 
             case 6:
+            {
+                move_terminal();
+
+                getMaxID(pls, css, max_id);
+                saveInFile(pls, css, max_id);
+
+                break;
+            }
+
+            case 7:
             {
                 move_terminal();
 

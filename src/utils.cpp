@@ -62,11 +62,12 @@ void printMainMenu()
         << "2. Create new compressor station" << std::endl
         << "3. Object management" << std::endl
         << "4. Topological sort" << std::endl
-        << "5. Save in file" << std::endl
-        << "6. Load from file" << std::endl
+        << "5. Dijkstra algorithm" << std::endl
+        << "6. Save in file" << std::endl
+        << "7. Load from file" << std::endl
         << "0. Exit" << std::endl
         << "=================================" << std::endl
-        << "Enter a command [0-6]: ";
+        << "Enter a command [0-7]: ";
 }
 
 void printObjectManagementMenu(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, std::vector<int> ids)
@@ -513,6 +514,11 @@ void topologicalSortGTN(std::unordered_map<int, Pipeline> pls, std::unordered_ma
         }
     }
 
+    if (edges.empty()) {
+        std::cout << "No available edges in the graph!" << std::endl;
+        return;
+    }
+
     std::map<int, int> id_to_index;
     std::map<int, int> index_to_id;
     int index = 0;
@@ -532,6 +538,118 @@ void topologicalSortGTN(std::unordered_map<int, Pipeline> pls, std::unordered_ma
     std::cout << "Following is a Topological Sort of the given graph: ";
 
     g.topologicalSort(used_vertices, index_to_id);
+}
+
+void dijkstraGTN(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int max_id)
+{
+    std::vector<std::vector<int>> edges;
+    std::vector<float> weights;
+    std::set<int> used_vertices;
+    std::vector<int> path;
+    int start_v = 0;
+    int end_v = 0;
+    getMaxID(pls, css, max_id);
+
+    for (int id = 1; id <= max_id; id++)
+    {
+        if (pls.count(id))
+        {
+            if ((pls[id].getStartID() != 0) && (pls[id].getEndID() != 0) && (pls[id].getStatus() != 1))
+            {
+                std::vector<int> edge = {pls[id].getStartID(), pls[id].getEndID()};
+                edges.push_back(edge);
+                weights.push_back(pls[id].getLength());
+                used_vertices.insert(pls[id].getStartID());
+                used_vertices.insert(pls[id].getEndID());
+            }
+        }
+    }
+
+    if (edges.empty()) {
+        std::cout << "No available edges in the graph!" << std::endl;
+        return;
+    }
+
+    std::map<int, int> id_to_index;
+    std::map<int, int> index_to_id;
+    int index = 0;
+    for (int vertex : used_vertices) {
+        id_to_index[vertex] = index;
+        index_to_id[index] = vertex;
+        index++;
+    }
+
+    Graph g(used_vertices.size());
+    
+    for (size_t i = 0; i < edges.size(); i++)
+    {
+        int start_index = id_to_index[edges[i][0]];
+        int end_index = id_to_index[edges[i][1]];
+        g.addEdge(start_index, end_index, weights[i]);
+    }
+
+    std::cout << "Choose a start vertex ID: ";
+    while(true)
+    {
+        start_v = getCorrectValue(1, max_id);
+        if (used_vertices.count(start_v))
+        {
+            break;
+        }
+        else
+        {
+            std::cout << "There is no vertex with such id. Try again!" << std::endl;
+        }
+    }
+
+    std::cout << "Choose an end vertex ID: ";
+    while(true)
+    {
+        end_v = getCorrectValue(1, max_id);
+        if (used_vertices.count(end_v))
+        {
+            break;
+        }
+        else
+        {
+            std::cout << "There is no vertex with such id. Try again!" << std::endl;
+        }
+    }
+
+    path = g.dijkstra(id_to_index[start_v], id_to_index[end_v], index_to_id);
+
+    if (path.empty()) {
+        std::cout << "No path exists between vertex " << start_v << " and vertex " << end_v << std::endl;
+        return;
+    }
+
+    std::cout << "The shortest path is: ";
+    for (size_t i = 0; i < path.size(); i++)
+    {
+        std::cout << index_to_id[path[i]];
+        if (i < path.size() - 1) {
+            std::cout << " -> ";
+        }
+    }
+    std::cout << std::endl;
+
+    float total_distance = 0;
+    for (size_t i = 1; i < path.size(); i++)
+    {
+        int start_id = index_to_id[path[i-1]];
+        int end_id = index_to_id[path[i]];
+        
+        for (size_t j = 0; j < edges.size(); j++)
+        {
+            if (edges[j][0] == start_id && edges[j][1] == end_id)
+            {
+                total_distance += weights[j];
+                break;
+            }
+        }
+    }
+
+    std::cout << "(total distance: " << total_distance << ")" << std::endl;
 }
 
 void saveInFile(std::unordered_map<int, Pipeline> pls, std::unordered_map<int, CompressorStation> css, int max_id)
