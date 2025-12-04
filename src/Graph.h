@@ -2,6 +2,7 @@
 #include "utils.h"
 
 // https://www.geeksforgeeks.org/cpp/cpp-program-for-topological-sorting/
+// https://www.geeksforgeeks.org/dsa/dijkstras-shortest-path-algorithm-greedy-algo-7/
 
 class Graph {
     int V;

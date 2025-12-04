@@ -2,6 +2,7 @@
 #include "Pipeline.h"
 #include "CompressorStation.h"
 #include "Graph.h"
+#include "System.h"
 
 using namespace std;
 using namespace chrono;
@@ -26,14 +27,11 @@ int main()
         cerr_out.redirect(logfile);
     }
 
-    unordered_map<int, Pipeline> pls;
-    unordered_map<int, CompressorStation> css;
-    
-    int max_id = 0;
+    System systema;
 
     while(1)
     {
-        printMainMenu();
+        systema.printMainMenu();
 
         switch(getCorrectValue(0, 7))
         {
@@ -44,13 +42,13 @@ int main()
             
             case 1:
             {
-                pipelineCreation(pls);
+                systema.pipelineCreation();
                 break;
             }
 
             case 2:
             {
-                csCreation(css);
+                systema.csCreation();
                 break;
             }
 
@@ -58,8 +56,8 @@ int main()
             {
                 move_terminal();
 
-                getMaxID(pls, css, max_id);
-                objectManagementLogic(pls, css, max_id);
+                systema.getMaxID();
+                systema.objectManagementLogic();
 
                 break;
             }
@@ -68,24 +66,8 @@ int main()
             {
                 move_terminal();
 
-                getMaxID(pls, css, max_id);
-
-                cout << "Gas transportation network:" << endl;
-
-                for (int id = 1; id <= max_id; id++)
-                {
-                    if (pls.count(id))
-                    {
-                        if ((pls[id].getStartID() != 0) && (pls[id].getEndID() != 0) && (pls[id].getStatus() != 1))
-                        {
-                            cout << pls[id].getStartID() << " -> " << pls[id].getEndID() << endl;
-                        }
-                    }
-                }
-
-                cout << endl;
-
-                topologicalSortGTN(pls, css, max_id);
+                systema.printGTN();
+                systema.topologicalSortGTN();
                 break;
             }
 
@@ -93,24 +75,8 @@ int main()
             {
                 move_terminal();
 
-                getMaxID(pls, css, max_id);
-
-                cout << "Gas transportation network:" << endl;
-
-                for (int id = 1; id <= max_id; id++)
-                {
-                    if (pls.count(id))
-                    {
-                        if ((pls[id].getStartID() != 0) && (pls[id].getEndID() != 0) && (pls[id].getStatus() != 1))
-                        {
-                            cout << pls[id].getStartID() << " -> " << pls[id].getEndID() << endl;
-                        }
-                    }
-                }
-
-                cout << endl;
-
-                dijkstraGTN(pls, css, max_id);
+                systema.printGTN();
+                systema.dijkstraGTN();
 
                 break;
             }
@@ -119,8 +85,8 @@ int main()
             {
                 move_terminal();
 
-                getMaxID(pls, css, max_id);
-                saveInFile(pls, css, max_id);
+                systema.getMaxID();
+                systema.saveInFile();
 
                 break;
             }
@@ -129,8 +95,8 @@ int main()
             {
                 move_terminal();
 
-                loadFromFile(pls, css, max_id);
-                getMaxID(pls, css, max_id);
+                systema.loadFromFile();
+                systema.getMaxID();
 
                 break;
             }
